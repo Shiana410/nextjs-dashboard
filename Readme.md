@@ -280,7 +280,70 @@ export async function fetchRevenue() {
 }
 ```
 ### 9. Streaming
-
+> #### What is streaming?
+>> Streaming is a data transfer technique that allows you to break down a route into smaller "chunks" and progressively stream them from the server to the client as they become ready.
+> #### Streaming a whole page with ```loading.tsx```
+>> Create a new file ```/app/dashboard/loading.tsx```
+>>
+```tsx
+export default function Loading() {
+  return <div>Loading...</div>;
+}
+```
+>> A few things are happening here:
+>> + loading.tsx is a special Next.js file built on top of Suspense, it allows you to create fallback UI to show as a replacement while page content loads.
+>> + Since <SideNav> is static, it's shown immediately. The user can interact with <SideNav> while the dynamic content is loading.
+>> + The user doesn't have to wait for the page to finish loading before navigating away (this is called interruptable navigation).
+> #### Adding loading skeletons
+>> A loading skeleton is a simplified version of the UI. Many websites use them as a placeholder (or fallback) to indicate to users that the content is loading. Any UI you add in loading.tsx will be embedded as part of the static file and sent first. Then, the rest of the dynamic content will be streamed from the server to the client.
+>> Inside your loading.tsx file, import a new component called ```<DashboardSkeleton>```:
+>>
+```tsx
+import DashboardSkeleton from '@/app/ui/skeletons';
+ 
+export default function Loading() {
+  return <DashboardSkeleton />;
+}
+```
+> #### Fixing the loading skeleton bug with route groups
+>> Right now, your loading skeleton will apply to the invoices and customers pages as well.
+>> Since loading.tsx is a level higher than /invoices/page.tsx and /customers/page.tsx in the file system, it's also applied to those pages.
+>> We can change this with Route Groups. Create a new folder called /(overview) inside the dashboard folder. Then, move your loading.tsx and page.tsx files inside the folder:
+>> + ```'/dashboard/(overview)/loading.tsx```
+>> + ```'/dashboard/(overview)/page.tsx```
+>> Now, the ```loading.tsx``` file will only apply to your dashboard overview page.
+>> Route groups allow you to organize files into logical groups without affecting the URL path structure. When you create a new folder using parentheses ```()```, the name won't be included in the URL path. So ```/dashboard/(overview)/page.tsx``` becomes ```/dashboard```.
+>> Here, you're using a route group to ensure ```loading.tsx``` only applies to your dashboard overview page. However, you can also use route groups to separate your application into sections (e.g. ```(marketing)``` routes and ```(shop)``` routes) or by teams for larger applications.
+> #### Streaming a component
+>> So far, you're streaming a whole page. However, you can also be more granular and stream specific components using React Suspense.
+>> Suspense allows you to defer rendering parts of your application until some condition is met (e.g. data is loaded). You can wrap your dynamic components in Suspense. Then, pass it a fallback component to show while the dynamic component loads.
+>> If you remember the slow data request, ```fetchRevenue()``` is the request slowing down the whole page. Instead of blocking your whole page, you can use Suspense to stream only this component and immediately show the rest of the page's UI.
+>> To do so, you'll need to move the data fetch to the component. Let's update the code to see what that'll look like:
+>> Delete all instances of ```fetchRevenue()``` and its data from ```/dashboard/(overview)/page.tsx```:
+>>
+```
+import { Card } from '@/app/ui/dashboard/cards';
+import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+import { lusitana } from '@/app/ui/fonts';
+import { fetchLatestInvoices, fetchCardData } from '@/app/lib/data'; // remove fetchRevenue
+ 
+export default async function Page() {
+  const revenue = await fetchRevenue() // delete this line
+  const latestInvoices = await fetchLatestInvoices();
+  const {
+    numberOfInvoices,
+    numberOfCustomers,
+    totalPaidInvoices,
+    totalPendingInvoices,
+  } = await fetchCardData();
+ 
+  return (
+    // ...
+  );
+}
+```
+>> 
 ### 10. Partial Prerendering
 
 ### 11. Adding Search and Pagination

@@ -638,14 +638,14 @@ export default async function Page() {
 >> There are a couple of benefits of implementing search with URL params:
 >> + Bookmarkable and Shareable URLs: Since the search parameters are in the URL, users can bookmark the current state of the application, including their search queries and filters, for future reference or sharing.
 >> + Server-Side Rendering and Initial Load: URL parameters can be directly consumed on the server to render the initial state, making it easier to handle server rendering.
->> + Analytics and Tracking: Having search queries and filters directly in the URL makes it easier to track user behavior without requiring additional client-side logic.
+>> + Analytics and Tracking: Having search queries and filters directly in the URL makes it easier to track user behaviour without requiring additional client-side logic.
 >>
 > #### Adding the search functionality
 >> These are the Next.js client hooks that you'll use to implement the search functionality:
 >> + ```useSearchParams```- Allows you to access the parameters of the current URL. For example, the search params for this URL ```/dashboard/invoices?page=1&query=pending``` would look like this: {```page: '1', query: 'pending'}```.
 >> + ```usePathname``` - Lets you read the current URL's pathname. For example, for the route ```/dashboard/invoices```, ```usePathname``` would return ```'/dashboard/invoices'```.
->> + ```useRouter``` - Enables navigation between routes within client components programmatically. There are multiple methods you can use.
->> Implementation steps:
+>> + ```useRouter``` - Enables programmatically navigation between routes within client components. There are multiple methods you can use.
+>> ##### Implementation steps:
 >>> ##### 1. Capture the user's input
 >>>> Create a new handleSearch function, and add an onChange listener to the <input> element. onChange will invoke handleSearch whenever the input value changes.
 >>>>
@@ -772,14 +772,1094 @@ export default function Search() {
 >>>> Here's a breakdown of what's happening:
 >>>> + ```${pathname}``` is the current path, in your case, ```"/dashboard/invoices"```.
 >>>> + As the user types into the search bar, ```params.toString()``` translates this input into a URL-friendly format.
->>>> + ```replace(${pathname}?${params.toString()})``` updates the URL with the user's search data. For example, ```/dashboard/invoices?query=lee``` if the user searches for "Lee".
+>>>> + ```replace(${pathname}?${params.toString()})``` updates the URL with the user's search data. For example, ```/dashboard/invoices?query=lee``` if the user searches for "Lee."
 >>>> + The URL is updated without reloading the page, thanks to Next.js's client-side navigation (which you learned about in the chapter on navigating between pages.
+>>> ##### 3. Keeping the URL and input in sync
+>>>> To ensure the input field is in sync with the URL and will be populated when sharing, you can pass a ```defaultValue``` to input by reading from ```searchParams```:
+>>>>
+```
+/*/app/ui/search.tsx*/
+<input
+  className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+  placeholder={placeholder}
+  onChange={(e) => {
+    handleSearch(e.target.value);
+  }}
+  defaultValue={searchParams.get('query')?.toString()}
+/>
+```
+>>>>
+>>> ##### 4. Updating the table
+>>>> Page components accept a prop called ```searchParams```, so you can pass the current URL params to the ```<Table>``` component.
+>>>>
+```
+/*/app/dashboard/invoices/page.tsx*/
+import Pagination from '@/app/ui/invoices/pagination';
+import Search from '@/app/ui/search';
+import Table from '@/app/ui/invoices/table';
+import { CreateInvoice } from '@/app/ui/invoices/buttons';
+import { lusitana } from '@/app/ui/fonts';
+import { Suspense } from 'react';
+import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+ 
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string;
+    page?: string;
+  };
+}) {
+  const query = searchParams?.query || '';
+  const currentPage = Number(searchParams?.page) || 1;
+ 
+  return (
+    <div className="w-full">
+      <div className="flex w-full items-center justify-between">
+        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+        <Search placeholder="Search invoices..." />
+        <CreateInvoice />
+      </div>
+      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+        <Table query={query} currentPage={currentPage} />
+      </Suspense>
+      <div className="mt-5 flex w-full justify-center">
+        {/* <Pagination totalPages={totalPages} /> */}
+      </div>
+    </div>
+  );
+}
+```
+>>>>
+>>>> If you navigate to the ```<Table```> Component, you'll see that the two props, ```query``` and ```currentPage```, are passed to the ```fetchFilteredInvoices()``` function which returns the invoices that match the query.
+>>>>
+```
+/*/app/ui/invoices/table.tsx*/
+// ...
+export default async function InvoicesTable({
+  query,
+  currentPage,
+}: {
+  query: string;
+  currentPage: number;
+}) {
+  const invoices = await fetchFilteredInvoices(query, currentPage);
+  // ...
+}
+```
+>>>>
+> #### Debouncing
+>> Inside your ```handleSearch``` function, add the following ```console.log```:
+>>
+```
+/*/app/ui/search.tsx*/
+function handleSearch(term: string) {
+  console.log(`Searching... ${term}`);
+ 
+  const params = new URLSearchParams(searchParams);
+  if (term) {
+    params.set('query', term);
+  } else {
+    params.delete('query');
+  }
+  replace(`${pathname}?${params.toString()}`);
+}
+```
+>> The URL is updated on every keystroke. This isn't a problem as our application is small, but imagine if your application had thousands of users, each sending a new request to your database on each keystroke.
+>> 
+>> Debouncing is a programming practice that limits the rate at which a function can fire. In our case, you only want to query the database when the user has stopped typing.
+>> 
+>> You can implement debouncing in a few ways, including manually creating your own debounce function.
+>> 
+>> Install ```use-debounce```:
+>> ```pnpm i use-debounce```
+>> 
+>> In your ```<Search>``` Component, import a function called ```useDebouncedCallback```:
+>>
+```
+/*/app/ui/search.tsx*/
+// ...
+import { useDebouncedCallback } from 'use-debounce';
+ 
+// Inside the Search Component...
+const handleSearch = useDebouncedCallback((term) => {
+  console.log(`Searching... ${term}`);
+ 
+  const params = new URLSearchParams(searchParams);
+  if (term) {
+    params.set('query', term);
+  } else {
+    params.delete('query');
+  }
+  replace(`${pathname}?${params.toString()}`);
+}, 300);
+```
+>>
+>> This function will wrap the contents of ```handleSearch``` and only run the code after a specific time once the user has stopped typing (300ms).
+> #### Adding pagination
+>> After introducing the search feature, you'll notice the table displays only 6 invoices at a time. This is because the ```fetchFilteredInvoices()``` function in ```data.ts``` returns a maximum of 6 invoices per page.
+>> 
+>> Adding pagination allows users to navigate through the different pages to view all the invoices. Let's see how you can implement pagination using URL params, just like you did with search.
+>> 
+>> Navigate to the ```<Pagination/>``` component and you'll notice that it's a Client Component. You don't want to fetch data on the client as this would expose your database secrets (remember, you're not using an API layer). Instead, you can fetch the data on the server, and pass it to the component as a prop.
+>> 
+>> In ```/dashboard/invoices/page.tsx```, import a new function called ```fetchInvoicesPages``` and pass the ```query``` from ```searchParams``` as an argument:
+>>
+```
+/*/app/dashboard/invoices/page.tsx*/
+// ...
+import { fetchInvoicesPages } from '@/app/lib/data';
+ 
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string,
+    page?: string,
+  },
+}) {
+  const query = searchParams?.query || '';
+  const currentPage = Number(searchParams?.page) || 1;
+ 
+  const totalPages = await fetchInvoicesPages(query);
+ 
+  return (
+    // ...
+  );
+}
+```
+>>
+>> ```fetchInvoicesPages``` returns the total number of pages based on the search query. For example, if there are 12 invoices that match the search query, and each page displays 6 invoices, then the total number of pages would be 2.
+>>
+>> Next, pass the ```totalPages``` prop to the ```<Pagination/>``` component:
+>>
+```
+/*/app/dashboard/invoices/page.tsx*/
+// ...
+ 
+export default async function Page({
+  searchParams,
+}: {
+  searchParams?: {
+    query?: string;
+    page?: string;
+  };
+}) {
+  const query = searchParams?.query || '';
+  const currentPage = Number(searchParams?.page) || 1;
+ 
+  const totalPages = await fetchInvoicesPages(query);
+ 
+  return (
+    <div className="w-full">
+      <div className="flex w-full items-center justify-between">
+        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+      </div>
+      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+        <Search placeholder="Search invoices..." />
+        <CreateInvoice />
+      </div>
+      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+        <Table query={query} currentPage={currentPage} />
+      </Suspense>
+      <div className="mt-5 flex w-full justify-center">
+        <Pagination totalPages={totalPages} />
+      </div>
+    </div>
+  );
+}
+```
+>>
+>> Navigate to the ```<Pagination/>``` component and import the ```usePathname``` and ```useSearchParams``` hooks. We will use this to get the current page and set the new page. Make sure to also uncomment the code in this component. Your application will break temporarily as you haven't implemented the ```<Pagination/>``` logic yet. Let's do that now!
+>>
+```
+/*/app/ui/invoices/pagination.tsx*/
+'use client';
+ 
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
+import Link from 'next/link';
+import { generatePagination } from '@/app/lib/utils';
+import { usePathname, useSearchParams } from 'next/navigation';
+ 
+export default function Pagination({ totalPages }: { totalPages: number }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+ 
+  // ...
+}
+```
+>>
+>> Next, create a new function inside the ```<Pagination>``` Component called ```createPageURL```. Similarly to the search, you'll use ```URLSearchParams``` to set the new page number, and pathName to create the URL string.
+>>
+```
+/*/app/ui/invoices/pagination.tsx*/
+'use client';
+ 
+import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+import clsx from 'clsx';
+import Link from 'next/link';
+import { generatePagination } from '@/app/lib/utils';
+import { usePathname, useSearchParams } from 'next/navigation';
+ 
+export default function Pagination({ totalPages }: { totalPages: number }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get('page')) || 1;
+ 
+  const createPageURL = (pageNumber: number | string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', pageNumber.toString());
+    return `${pathname}?${params.toString()}`;
+  };
+ 
+  // ...
+}
+```
+>>
+>> Here's a breakdown of what's happening:
+>>
+>> + ```createPageURL``` creates an instance of the current search parameters.
+>> + Then, it updates the "page" parameter to the provided page number.
+>> + Finally, it constructs the full URL using the pathname and updated search parameters.
+>>
+>> Finally, when the user types a new search query, you want to reset the page number to 1. You can do this by updating the ```handleSearch``` function in your ```<Search>``` component:
+>>
+```
+/*/app/ui/search.tsx*/
+'use client';
+ 
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useDebouncedCallback } from 'use-debounce';
+ 
+export default function Search({ placeholder }: { placeholder: string }) {
+  const searchParams = useSearchParams();
+  const { replace } = useRouter();
+  const pathname = usePathname();
+ 
+  const handleSearch = useDebouncedCallback((term) => {
+    const params = new URLSearchParams(searchParams);
+    params.set('page', '1');
+    if (term) {
+      params.set('query', term);
+    } else {
+      params.delete('query');
+    }
+    replace(`${pathname}?${params.toString()}`);
+  }, 300);
+ 
+```
+>>
 ### 12. Mutating Data
-
+> #### What are Server Actions?
+>> React Server Actions allow you to run asynchronous code directly on the server. They eliminate the need to create API endpoints to mutate your data. Instead, you write asynchronous functions that execute on the server and can be invoked from your Client or Server Components.
+> #### Creating an invoice
+>> Here are the steps you'll take to create a new invoice:
+>> 1. Create a form to capture the user's input.
+>> 2. Create a Server Action and invoke it from the form.
+>> 3. Inside your Server Action, extract the data from the formData object.
+>> 4. Validate and prepare the data to be inserted into your database.
+>> 5. Insert the data and handle any errors.
+>> 6. Revalidate the cache and redirect the user back to invoices page.
+>> ##### 1. Create a new route and form
+>>>
+```
+/*/dashboard/invoices/create/page.tsx*/
+import Form from '@/app/ui/invoices/create-form';
+import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+import { fetchCustomers } from '@/app/lib/data';
+ 
+export default async function Page() {
+  const customers = await fetchCustomers();
+ 
+  return (
+    <main>
+      <Breadcrumbs
+        breadcrumbs={[
+          { label: 'Invoices', href: '/dashboard/invoices' },
+          {
+            label: 'Create Invoice',
+            href: '/dashboard/invoices/create',
+            active: true,
+          },
+        ]}
+      />
+      <Form customers={customers} />
+    </main>
+  );
+}
+```
+>> ##### 2. Create a server action
+>>> In your ```actions.ts``` file, create a new async function that accepts ```formData```:
+>>>
+```
+/*/app/lib/action.ts*/
+'use server';
+ 
+export async function createInvoice(formData: FormData) {}
+```
+>>>
+>>> By adding the 'use server,' you mark all the exported functions within the file as Server Actions. These server functions can then be imported and used in Client and Server components.
+>>>
+>>> Then, in your ```<Form>``` component, import the createInvoice from ```your actions.ts``` file. Add a ```action``` attribute to the ```<form>``` element, and call the createInvoice action.
+>>>
+```
+/app/ui/invoices/create-form.tsx*/
+import { customerField } from '@/app/lib/definitions';
+import Link from 'next/link';
+import {
+  CheckIcon,
+  ClockIcon,
+  CurrencyDollarIcon,
+  UserCircleIcon,
+} from '@heroicons/react/24/outline';
+import { Button } from '@/app/ui/button';
+import { createInvoice } from '@/app/lib/actions';
+ 
+export default function Form({
+  customers,
+}: {
+  customers: customerField[];
+}) {
+  return (
+    <form action={createInvoice}>
+      // ...
+  )
+}
+```
+>>>
+>> ##### 3. Extract the data from ```formData```
+>>> Back in your ```actions.ts``` file, you'll need to extract the values of ```formData```, there are a couple of methods you can use.
+>>>
+```
+/*/app/lib/actions.ts*/
+'use server';
+ 
+export async function createInvoice(formData: FormData) {
+  const rawFormData = {
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  };
+  // Test it out:
+  console.log(rawFormData);
+}
+```
+>>>
+>> ##### 4. Validate and prepare the data
+>>> ###### Type validation and coercion
+>>> It's important to validate that the data from your form aligns with the expected types in your database. For instance, if you add a ```console.log``` inside your action:
+>>>
+```console.log(typeof rawFormData.amount);```
+>>>
+>>> You'll notice that amount is of type string and not number. This is because input elements with ```type="number"``` actually return a string
+>>>
+>>> In your ```actions.ts``` file, import Zod and define a schema that matches the shape of your form object. This schema will validate the ```formData``` before saving it to a database.
+>>>
+```
+/*/app/lib/actions.ts*/
+'use server';
+ 
+import { z } from 'zod';
+ 
+const FormSchema = z.object({
+  id: z.string(),
+  customerId: z.string(),
+  amount: z.coerce.number(),
+  status: z.enum(['pending', 'paid']),
+  date: z.string(),
+});
+ 
+const CreateInvoice = FormSchema.omit({ id: true, date: true });
+ 
+export async function createInvoice(formData: FormData) {
+  // ...
+}
+```
+>>>
+>>> You can then pass your ```rawFormData``` to ```CreateInvoice``` to validate the types:
+>>>
+```
+/*/app/lib/actions.ts*/
+// ...
+export async function createInvoice(formData: FormData) {
+  const { customerId, amount, status } = CreateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+}
+```
+>>>
+>>> ###### Storing values in cents
+>>>
+```
+/*/app/lib/actions.ts*/
+// ...
+export async function createInvoice(formData: FormData) {
+  const { customerId, amount, status } = CreateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+  const amountInCents = amount * 100;
+}
+```
+>>>
+>>> ###### Creating new dates
+>>>
+```
+/*/app/lib/actions.ts*/
+// ...
+export async function createInvoice(formData: FormData) {
+  const { customerId, amount, status } = CreateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+  const amountInCents = amount * 100;
+  const date = new Date().toISOString().split('T')[0];
+}
+```
+>>>
+>> ##### 5. Inserting the data into your database
+>> Now that you have all the values you need for your database, you can create an SQL query to insert the new invoice into your database and pass in the variables:
+>>
+```
+/*/app/lib/actions.ts*/
+import { z } from 'zod';
+import { sql } from '@vercel/postgres';
+ 
+// ...
+ 
+export async function createInvoice(formData: FormData) {
+  const { customerId, amount, status } = CreateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+  const amountInCents = amount * 100;
+  const date = new Date().toISOString().split('T')[0];
+ 
+  await sql`
+    INSERT INTO invoices (customer_id, amount, status, date)
+    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+  `;
+}
+```
+>>
+>> ##### 6. Revalidate and redirect
+>> Next.js has a Client-side Router Cache that stores the route segments in the user's browser for a time. Along with prefetching, this cache ensures that users can quickly navigate between routes while reducing the number of requests made to the server.
+>>
+>> Since you're updating the data displayed in the invoices route, you want to clear this cache and trigger a new request to the server. You can do this with the revalidatePath function from Next.js:
+>>
+```
+/*/app/lib/actions.ts*/
+'use server';
+ 
+import { z } from 'zod';
+import { sql } from '@vercel/postgres';
+import { revalidatePath } from 'next/cache';
+ 
+// ...
+ 
+export async function createInvoice(formData: FormData) {
+  const { customerId, amount, status } = CreateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+  const amountInCents = amount * 100;
+  const date = new Date().toISOString().split('T')[0];
+ 
+  await sql`
+    INSERT INTO invoices (customer_id, amount, status, date)
+    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+  `;
+ 
+  revalidatePath('/dashboard/invoices');
+}
+```
+>>
+>> At this point, you also want to redirect the user back to the ```/dashboard/invoices``` page. You can do this with the ```redirect``` function from Next.js:
+>>
+```
+/*/app/lib/actions.ts*/
+'use server';
+ 
+import { z } from 'zod';
+import { sql } from '@vercel/postgres';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
+ 
+// ...
+ 
+export async function createInvoice(formData: FormData) {
+  // ...
+ 
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
+}
+```
+>>
+> #### Updating an invoice
+>> These are the steps you'll take to update an invoice:
+>> ##### 1. Create a new dynamic route segment with the invoice id
+>> In your <Table> component, notice there's a <UpdateInvoice /> button that receives the invoice's id from the table records.
+>>
+```
+/*/app/ui/invoices/table.tsx*/
+export default async function InvoicesTable({
+  query,
+  currentPage,
+}: {
+  query: string;
+  currentPage: number;
+}) {
+  return (
+    // ...
+    <td className="flex justify-end gap-2 whitespace-nowrap px-6 py-4 text-sm">
+      <UpdateInvoice id={invoice.id} />
+      <DeleteInvoice id={invoice.id} />
+    </td>
+    // ...
+  );
+}
+```
+>>
+>> Navigate to your <UpdateInvoice /> component, and update the href of the Link to accept the id prop. You can use template literals to link to a dynamic route segment:
+>>
+```
+/*/app/ui/invoices/buttons.tsx*/
+import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+import Link from 'next/link';
+ 
+// ...
+ 
+export function UpdateInvoice({ id }: { id: string }) {
+  return (
+    <Link
+      href={`/dashboard/invoices/${id}/edit`}
+      className="rounded-md border p-2 hover:bg-gray-100"
+    >
+      <PencilIcon className="w-5" />
+    </Link>
+  );
+}
+```
+>>
+>> ##### 2. Read the invoice id from the page params
+>>
+```
+/*/app/dashboard/invoices/[id]/edit/page.tsx*/
+import Form from '@/app/ui/invoices/edit-form';
+import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+import { fetchCustomers } from '@/app/lib/data';
+ 
+export default async function Page() {
+  return (
+    <main>
+      <Breadcrumbs
+        breadcrumbs={[
+          { label: 'Invoices', href: '/dashboard/invoices' },
+          {
+            label: 'Edit Invoice',
+            href: `/dashboard/invoices/${id}/edit`,
+            active: true,
+          },
+        ]}
+      />
+      <Form invoice={invoice} customers={customers} />
+    </main>
+  );
+}
+```
+>>
+> >Notice how it's similar to your ```/create``` invoice page, except it imports a different form (from the edit-form.tsx file). This form should be pre-populated with a ```defaultValue``` for the customer's name, invoice amount, and status. To pre-populate the form fields, you need to fetch the specific invoice using ```id```.
+>>
+>> In addition to ```searchParams```, page components also accept a prop called ```params``` which you can use to access the ```id```. Update your ```<Page>``` component to receive the prop:
+>>
+```
+/*/app/dashboard/invoices/[id]/edit/page.tsx*/
+import Form from '@/app/ui/invoices/edit-form';
+import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+import { fetchCustomers } from '@/app/lib/data';
+ 
+export default async function Page({ params }: { params: { id: string } }) {
+  const id = params.id;
+  // ...
+}
+```
+>>
+>> ##### 3. Fetch the specific invoice from your database
+>> + Import a new function called fetchInvoiceById and pass the id as an argument.
+>> + Import fetchCustomers to fetch the customer names for the dropdown.
+>>
+>> You can use ```Promise.all``` to fetch both the invoice and customers in parallel:
+>>
+```
+/*/dahsboard/invoices/[id]/edit/page.tsx*/
+import Form from '@/app/ui/invoices/edit-form';
+import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
+ 
+export default async function Page({ params }: { params: { id: string } }) {
+  const id = params.id;
+  const [invoice, customers] = await Promise.all([
+    fetchInvoiceById(id),
+    fetchCustomers(),
+  ]);
+  // ...
+}
+```
+>>
+>> ##### 4. Pass the ```id``` to the Server Action
+>> You can pass ```id``` to the Server Action using JS ```bind```. This will ensure that any values passed to the Server Action are encoded.
+>>
+```
+/*/app/ui/invoices/edit-form.tsx*/
+// ...
+import { updateInvoice } from '@/app/lib/actions';
+ 
+export default function EditInvoiceForm({
+  invoice,
+  customers,
+}: {
+  invoice: InvoiceForm;
+  customers: CustomerField[];
+}) {
+  const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+ 
+  return (
+    <form action={updateInvoiceWithId}>
+      <input type="hidden" name="id" value={invoice.id} />
+    </form>
+  );
+}
+```
+>>
+>> Then, in your ```actions.ts``` file, create a new action, ```updateInvoice```:
+>>
+```
+/*/app/lib/actions.ts*/
+// Use Zod to update the expected types
+const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+ 
+// ...
+ 
+export async function updateInvoice(id: string, formData: FormData) {
+  const { customerId, amount, status } = UpdateInvoice.parse({
+    customerId: formData.get('customerId'),
+    amount: formData.get('amount'),
+    status: formData.get('status'),
+  });
+ 
+  const amountInCents = amount * 100;
+ 
+  await sql`
+    UPDATE invoices
+    SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+    WHERE id = ${id}
+  `;
+ 
+  revalidatePath('/dashboard/invoices');
+  redirect('/dashboard/invoices');
+}
+```
+>>
+> #### Deleting an invoice
+>> To delete an invoice using a Server Action, wrap the delete button in a ```<form>``` element and pass the ```id``` to the Server Action using ```bind```:
+>>
+```
+/*/app/ui/invoices/buttons.tsx*/
+import { deleteInvoice } from '@/app/lib/actions';
+ 
+// ...
+ 
+export function DeleteInvoice({ id }: { id: string }) {
+  const deleteInvoiceWithId = deleteInvoice.bind(null, id);
+ 
+  return (
+    <form action={deleteInvoiceWithId}>
+      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+        <span className="sr-only">Delete</span>
+        <TrashIcon className="w-4" />
+      </button>
+    </form>
+  );
+}
+```
+>>
+>> Inside your ```actions.ts``` file, create a new action called ```deleteInvoice```.
+>>
+```
+export async function deleteInvoice(id: string) {
+  await sql`DELETE FROM invoices WHERE id = ${id}`;
+  revalidatePath('/dashboard/invoices');
+}
+```
+>>
 ### 13. Handling Errors
 
 ### 14. Improving Accessibility
 
 ### 15. Adding Authentication
+> #### Creaint the login route
+>> Start by creating a new route in your application called /login and paste the following code:
+>>
+```
+/*/app/login/page.tsx*/
+import AcmeLogo from '@/app/ui/acme-logo';
+import LoginForm from '@/app/ui/login-form';
+ 
+export default function LoginPage() {
+  return (
+    <main className="flex items-center justify-center md:h-screen">
+      <div className="relative mx-auto flex w-full max-w-[400px] flex-col space-y-2.5 p-4 md:-mt-32">
+        <div className="flex h-20 w-full items-end rounded-lg bg-blue-500 p-3 md:h-36">
+          <div className="w-32 text-white md:w-36">
+            <AcmeLogo />
+          </div>
+        </div>
+        <LoginForm />
+      </div>
+    </main>
+  );
+}
+```
+>>
+> #### Setting up the NextAuth.js
+>> Install NextAuth.js by running the following command in your terminal: ```pnpm i next-auth@beta```
+>> 
+>> Next, generate a secret key for your application. This key is used to encrypt cookies, ensuring the security of user sessions. You can do this by running the following command in your terminal: ```openssl ran -base64 32```
+>>
+>> Then,in your ```.env``` file, add your generated key to the AUTH_SECRET variable: ```AUTH_SECRET=your-secret-key```
+>>
+>> ##### Adding the pages option
+>> Create an ```auth.config.ts``` file at the root of our project that exports an ```authConfig``` object. This object will contain the configuration options for ```NextAuth.js```.
+>>
+```
+/*/auth/config.ts*/
+import type { NextAuthConfig } from 'next-auth';
+ 
+export const authConfig = {
+  pages: {
+    signIn: '/login',
+  },
+} satisfies NextAuthConfig;
+```
+>>
+>> ##### Protecting your routes with Next.js Middleware
+>> Next, add the logic to protect your routes. This will prevent users from accessing the dashboard pages unless they are logged in.
+>>
+```
+/*/auth.config.ts*/
+import type { NextAuthConfig } from 'next-auth';
+ 
+export const authConfig = {
+  pages: {
+    signIn: '/login',
+  },
+  callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      if (isOnDashboard) {
+        if (isLoggedIn) return true;
+        return false; // Redirect unauthenticated users to login page
+      } else if (isLoggedIn) {
+        return Response.redirect(new URL('/dashboard', nextUrl));
+      }
+      return true;
+    },
+  },
+  providers: [], // Add providers with an empty array for now
+} satisfies NextAuthConfig;
+```
+>>
+>> The ```authorized``` callback is used to verify if the request is authorized to access a page via Next.js Middleware. It is called before a request is completed, and it receives an object with the auth and ```request``` properties. The ```auth``` property contains the user's session, and the ```request``` property contains the incoming request.
+>>
+>> The ```providers``` option is an array where you list different login options. For now, it's an empty array to satisfy NextAuth config. You'll learn more about it in the Adding the Credentials provider section.
+>>
+>> Next, you will need to import the ```authConfig``` object into a Middleware file.
+>>
+```
+/*/middleware.ts*/
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
+ 
+export default NextAuth(authConfig).auth;
+ 
+export const config = {
+  // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
+  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+};
+```
+>>
+>> Here you're initializing NextAuth.js with the ```authConfig``` object and exporting the ```auth``` property. You're also using the ```matcher``` option from Middleware to specify that it should run on specific paths.
+>>
+>> ##### Password having
+>> In your seed.js file, you used a package called bcrypt to hash the user's password before storing it in the database. You will use it again later in this chapter to compare that the password entered by the user matches the one in the database. However, you will need to create a separate file for the bcrypt package. This is because bcrypt relies on Node.js APIs not available in Next.js Middleware.
+>>
+>> Create a new file called ```auth.ts``` that spreads your ```authConfig``` object:
+>>
+```
+/*/auth.ts*/
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
+ 
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+});
+```
+>>
+>> ##### Adding the Credentials provider
+>> Next, you will need to add the ```providers``` option for NextAuth.js. providers is an array where you list different login options such as Google or GitHub. For this course, we will focus on using the Credentials provider only.
+>>
+```
+/*/auth.ts*/
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
+import Credentials from 'next-auth/providers/credentials';
+ 
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  providers: [Credentials({})],
+});
+```
+>>
+>> ##### Adding the sign-in functionality
+>> You can use the ```authorize``` function to handle the authentication logic. Similarly to Server Actions, you can use ```zod``` to validate the email and password before checking if the user exists in the database:
+>>
+```ts
+/*/auth.ts*/
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
+import Credentials from 'next-auth/providers/credentials';
+import { z } from 'zod';
+ 
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        const parsedCredentials = z
+          .object({ email: z.string().email(), password: z.string().min(6) })
+          .safeParse(credentials);
+      },
+    }),
+  ],
+});
+```
+>>
+>> After validating the credentials, create a new ```getUser``` function that queries the user from the database. Then, call bcrypt.compare to check if the passwords match:
+>>
+```ts
+/*/auth.ts*/
+import NextAuth from 'next-auth';
+import Credentials from 'next-auth/providers/credentials';
+import { authConfig } from './auth.config';
+import { z } from 'zod';
+import { sql } from '@vercel/postgres';
+import type { User } from '@/app/lib/definitions';
+import bcrypt from 'bcrypt';
+ 
+async function getUser(email: string): Promise<User | undefined> {
+  try {
+    const user = await sql<User>`SELECT * FROM users WHERE email=${email}`;
+    return user.rows[0];
+  } catch (error) {
+    console.error('Failed to fetch user:', error);
+    throw new Error('Failed to fetch user.');
+  }
+}
+ 
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  providers: [
+    Credentials({
+      async authorize(credentials) {
+        const parsedCredentials = z
+          .object({ email: z.string().email(), password: z.string().min(6) })
+          .safeParse(credentials);
+ 
+        if (parsedCredentials.success) {
+          const { email, password } = parsedCredentials.data;
+          const user = await getUser(email);
+          if (!user) return null;
+          const passwordsMatch = await bcrypt.compare(password, user.password);
+ 
+          if (passwordsMatch) return user;
+        }
 
+        console.log('Invalid credentials');
+        return null;
+      },
+    }),
+  ],
+});
+```
+>>
+>> ##### Updating the login form
+>> Now, you need to connect the auth logic with your login form. In your ```actions.ts``` file, create a new action called ```authenticate```. This action should import the ```signIn``` function from ```auth.ts```:
+>>
+```ts
+/*/app/lib/actions.ts*/
+'use server';
+ 
+import { signIn } from '@/auth';
+import { AuthError } from 'next-auth';
+ 
+// ...
+ 
+export async function authenticate(
+  prevState: string | undefined,
+  formData: FormData,
+) {
+  try {
+    await signIn('credentials', formData);
+  } catch (error) {
+    if (error instanceof AuthError) {
+      switch (error.type) {
+        case 'CredentialsSignin':
+          return 'Invalid credentials.';
+        default:
+          return 'Something went wrong.';
+      }
+    }
+    throw error;
+  }
+}
+```
+>>
+>> Finally, in your ```login-form.tsx``` component, you can use React's ```useActionState``` to call the server action, handle form errors, and display the form's pending state:
+>>
+```tsx
+/*/app/ui/login-form.tsx*/
+'use client';
+ 
+import { lusitana } from '@/app/ui/fonts';
+import {
+  AtSymbolIcon,
+  KeyIcon,
+  ExclamationCircleIcon,
+} from '@heroicons/react/24/outline';
+import { ArrowRightIcon } from '@heroicons/react/20/solid';
+import { Button } from '@/app/ui/button';
+import { useActionState } from 'react';
+import { authenticate } from '@/app/lib/actions';
+ 
+export default function LoginForm() {
+  const [errorMessage, formAction, isPending] = useActionState(
+    authenticate,
+    undefined,
+  );
+ 
+  return (
+    <form action={formAction} className="space-y-3">
+      <div className="flex-1 rounded-lg bg-gray-50 px-6 pb-4 pt-8">
+        <h1 className={`${lusitana.className} mb-3 text-2xl`}>
+          Please log in to continue.
+        </h1>
+        <div className="w-full">
+          <div>
+            <label
+              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+              htmlFor="email"
+            >
+              Email
+            </label>
+            <div className="relative">
+              <input
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                id="email"
+                type="email"
+                name="email"
+                placeholder="Enter your email address"
+                required
+              />
+              <AtSymbolIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+            </div>
+          </div>
+          <div className="mt-4">
+            <label
+              className="mb-3 mt-5 block text-xs font-medium text-gray-900"
+              htmlFor="password"
+            >
+              Password
+            </label>
+            <div className="relative">
+              <input
+                className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+                id="password"
+                type="password"
+                name="password"
+                placeholder="Enter password"
+                required
+                minLength={6}
+              />
+              <KeyIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+            </div>
+          </div>
+        </div>
+        <Button className="mt-4 w-full" aria-disabled={isPending}>
+          Log in <ArrowRightIcon className="ml-auto h-5 w-5 text-gray-50" />
+        </Button>
+        <div
+          className="flex h-8 items-end space-x-1"
+          aria-live="polite"
+          aria-atomic="true"
+        >
+          {errorMessage && (
+            <>
+              <ExclamationCircleIcon className="h-5 w-5 text-red-500" />
+              <p className="text-sm text-red-500">{errorMessage}</p>
+            </>
+          )}
+        </div>
+      </div>
+    </form>
+  );
+}
+```
+>
+> #### Adding the logout functionality
+>> To add the logout functionality to ```<SideNav />```, call the ```signOut``` function from ```auth.ts``` in your ```<form>``` element:
+>>
+```tsx
+/*/ui/dashboard/sidenav.tsx*/
+import Link from 'next/link';
+import NavLinks from '@/app/ui/dashboard/nav-links';
+import AcmeLogo from '@/app/ui/acme-logo';
+import { PowerIcon } from '@heroicons/react/24/outline';
+import { signOut } from '@/auth';
+ 
+export default function SideNav() {
+  return (
+    <div className="flex h-full flex-col px-3 py-4 md:px-2">
+      // ...
+      <div className="flex grow flex-row justify-between space-x-2 md:flex-col md:space-x-0 md:space-y-2">
+        <NavLinks />
+        <div className="hidden h-auto w-full grow rounded-md bg-gray-50 md:block"></div>
+        <form
+          action={async () => {
+            'use server';
+            await signOut();
+          }}
+        >
+          <button className="flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3">
+            <PowerIcon className="w-6" />
+            <div className="hidden md:block">Sign Out</div>
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+```
+>> 
 ### 16. Adding Metadata

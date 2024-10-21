@@ -1374,174 +1374,173 @@ There are a few cases where you have to write database queries:
 >>
 
 #### Updating an invoice
-> These are the steps you'll take to update an invoice:
-> ##### 1. Create a new dynamic route segment with the invoice id
-> In your <Table> component, notice there's a <UpdateInvoice /> button that receives the invoice's id from the table records.
->
-> ```tsx
-> /*/app/ui/invoices/table.tsx*/
-> export default async function InvoicesTable({
->   query,
->   currentPage,
-> }: {
->   query: string;
->   currentPage: number;
-> }) {
->   return (
->     // ...
->     <td className="flex justify-end gap-2 whitespace-nowrap px-6 py-4 text-sm">
->       <UpdateInvoice id={invoice.id} />
->       <DeleteInvoice id={invoice.id} />
->     </td>
->     // ...
->   );
-> }
-> ```
->
-> Navigate to your <UpdateInvoice /> component, and update the link's href to accept the id prop. You can use template literals to link to a dynamic route segment:
->
-> ```tsx
-> /*/app/ui/invoices/buttons.tsx*/
-> import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-> import Link from 'next/link';
->  
-> // ...
->  
-> export function UpdateInvoice({ id }: { id: string }) {
->   return (
->     <Link
->       href={`/dashboard/invoices/${id}/edit`}
->       className="rounded-md border p-2 hover:bg-gray-100"
->     >
->       <PencilIcon className="w-5" />
->     </Link>
->   );
-> }
-> ```
->
-> ##### 2. Read the invoice ID from the page params
->
-> ```tsx
-> /*/app/dashboard/invoices/[id]/edit/page.tsx*/
-> import Form from '@/app/ui/invoices/edit-form';
-> import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-> import { fetchCustomers } from '@/app/lib/data';
->  
-> export default async function Page() {
->   return (
->     <main>
->       <Breadcrumbs
->         breadcrumbs={[
->           { label: 'Invoices', href: '/dashboard/invoices' },
->           {
->             label: 'Edit Invoice',
->             href: `/dashboard/invoices/${id}/edit`,
->             active: true,
->           },
->         ]}
->       />
->       <Form invoice={invoice} customers={customers} />
->     </main>
->   );
-> }
-> ```
->
-> Notice how it's similar to your ```/create``` invoice page, except it imports a different form (from the edit-form.tsx file). This form should be pre-populated with a ```defaultValue``` for the customer's name, invoice amount, and status. To pre-populate the form fields, fetch the specific invoice using ```id```.
->
-> In addition to ```searchParams```, page components also accept a prop called ```params``` which you can use to access the ```id```. Update your ```<Page>``` component to receive the prop:
->
-> ```tsx
-> /*/app/dashboard/invoices/[id]/edit/page.tsx*/
-> import Form from '@/app/ui/invoices/edit-form';
-> import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-> import { fetchCustomers } from '@/app/lib/data';
->  
-> export default async function Page({ params }: { params: { id: string } }) {
->   const id = params.id;
->   // ...
-> }
-> ```
->
-> ##### 3. Fetch the specific invoice from your database
-> + Import a new fetchInvoiceById function and pass the id as an argument.
-> + Import fetchCustomers to fetch the customer names for the dropdown.
->
-> You can use ```Promise.all``` to fetch both the invoice and customers in parallel:
->
-> ```tsx
-> /*/dahsboard/invoices/[id]/edit/page.tsx*/
-> import Form from '@/app/ui/invoices/edit-form';
-> import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-> import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
->  
-> export default async function Page({ params }: { params: { id: string } }) {
->   const id = params.id;
->   const [invoice, customers] = await Promise.all([
->     fetchInvoiceById(id),
->     fetchCustomers(),
->   ]);
->   // ...
-> }
-> ```
->
-> ##### 4. Pass the ```id``` to the Server Action
-> You can pass ```id``` to the Server Action using JS ```bind```. This will ensure that any values passed to the Server Action are encoded.
->
-> ```tsx
-> /*/app/ui/invoices/edit-form.tsx*/
-> // ...
-> import { updateInvoice } from '@/app/lib/actions';
->  
-> export default function EditInvoiceForm({
->   invoice,
->   customers,
-> }: {
->   invoice: InvoiceForm;
->   customers: CustomerField[];
-> }) {
->   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
->  
->   return (
->     <form action={updateInvoiceWithId}>
->       <input type="hidden" name="id" value={invoice.id} />
->     </form>
->   );
-> }
-> ```
->
-> Then, in your ```actions.ts``` file, create a new action, ```updateInvoice```:
->
-> ```ts
-> /*/app/lib/actions.ts*/
-> // Use Zod to update the expected types
-> const UpdateInvoice = FormSchema.omit({ id: true, date: true });
->  
-> // ...
->  
-> export async function updateInvoice(id: string, formData: FormData) {
->   const { customerId, amount, status } = UpdateInvoice.parse({
->     customerId: formData.get('customerId'),
->     amount: formData.get('amount'),
->     status: formData.get('status'),
->   });
->  
->   const amountInCents = amount * 100;
->  
->   await sql`
->     UPDATE invoices
->     SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
->     WHERE id = ${id}
->   `;
->  
->   revalidatePath('/dashboard/invoices');
->   redirect('/dashboard/invoices');
-> }
-> ```
->
->
+These are the steps you'll take to update an invoice:
+ ##### 1. Create a new dynamic route segment with the invoice id
+ In your <Table> component, notice there's a <UpdateInvoice /> button that receives the invoice's id from the table records.
+
+ ```tsx
+ /*/app/ui/invoices/table.tsx*/
+ export default async function InvoicesTable({
+   query,
+   currentPage,
+ }: {
+   query: string;
+   currentPage: number;
+ }) {
+   return (
+     // ...
+     <td className="flex justify-end gap-2 whitespace-nowrap px-6 py-4 text-sm">
+       <UpdateInvoice id={invoice.id} />
+       <DeleteInvoice id={invoice.id} />
+     </td>
+     // ...
+   );
+ }
+ ```
+
+ Navigate to your <UpdateInvoice /> component, and update the link's href to accept the id prop. You can use template literals to link to a dynamic route segment:
+
+ ```tsx
+ /*/app/ui/invoices/buttons.tsx*/
+ import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+ import Link from 'next/link';
+  
+ // ...
+  
+ export function UpdateInvoice({ id }: { id: string }) {
+   return (
+     <Link
+       href={`/dashboard/invoices/${id}/edit`}
+       className="rounded-md border p-2 hover:bg-gray-100"
+     >
+       <PencilIcon className="w-5" />
+     </Link>
+   );
+ }
+ ```
+
+ ##### 2. Read the invoice ID from the page params
+
+ ```tsx
+ /*/app/dashboard/invoices/[id]/edit/page.tsx*/
+ import Form from '@/app/ui/invoices/edit-form';
+ import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+ import { fetchCustomers } from '@/app/lib/data';
+  
+ export default async function Page() {
+   return (
+     <main>
+       <Breadcrumbs
+         breadcrumbs={[
+           { label: 'Invoices', href: '/dashboard/invoices' },
+           {
+             label: 'Edit Invoice',
+             href: `/dashboard/invoices/${id}/edit`,
+             active: true,
+           },
+         ]}
+       />
+       <Form invoice={invoice} customers={customers} />
+     </main>
+   );
+ }
+ ```
+
+ Notice how it's similar to your ```/create``` invoice page, except it imports a different form (from the edit-form.tsx file). This form should be pre-populated with a ```defaultValue``` for the customer's name, invoice amount, and status. To pre-populate the form fields, fetch the specific invoice using ```id```.
+
+ In addition to ```searchParams```, page components also accept a prop called ```params``` which you can use to access the ```id```. Update your ```<Page>``` component to receive the prop:
+
+ ```tsx
+ /*/app/dashboard/invoices/[id]/edit/page.tsx*/
+ import Form from '@/app/ui/invoices/edit-form';
+ import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+ import { fetchCustomers } from '@/app/lib/data';
+  
+ export default async function Page({ params }: { params: { id: string } }) {
+   const id = params.id;
+   // ...
+ }
+ ```
+
+ ##### 3. Fetch the specific invoice from your database
+ + Import a new fetchInvoiceById function and pass the id as an argument.
+ + Import fetchCustomers to fetch the customer names for the dropdown.
+
+ You can use ```Promise.all``` to fetch both the invoice and customers in parallel:
+
+ ```tsx
+ /*/dahsboard/invoices/[id]/edit/page.tsx*/
+ import Form from '@/app/ui/invoices/edit-form';
+ import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+ import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
+  
+ export default async function Page({ params }: { params: { id: string } }) {
+   const id = params.id;
+   const [invoice, customers] = await Promise.all([
+     fetchInvoiceById(id),
+     fetchCustomers(),
+   ]);
+   // ...
+ }
+ ```
+
+ ##### 4. Pass the ```id``` to the Server Action
+ You can pass ```id``` to the Server Action using JS ```bind```. This will ensure that any values passed to the Server Action are encoded.
+
+ ```tsx
+ /*/app/ui/invoices/edit-form.tsx*/
+ // ...
+ import { updateInvoice } from '@/app/lib/actions';
+  
+ export default function EditInvoiceForm({
+   invoice,
+   customers,
+ }: {
+   invoice: InvoiceForm;
+   customers: CustomerField[];
+ }) {
+   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+  
+   return (
+     <form action={updateInvoiceWithId}>
+       <input type="hidden" name="id" value={invoice.id} />
+     </form>
+   );
+ }
+ ```
+
+ Then, in your ```actions.ts``` file, create a new action, ```updateInvoice```:
+
+ ```ts
+ /*/app/lib/actions.ts*/
+ // Use Zod to update the expected types
+ const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+  
+ // ...
+  
+ export async function updateInvoice(id: string, formData: FormData) {
+   const { customerId, amount, status } = UpdateInvoice.parse({
+     customerId: formData.get('customerId'),
+     amount: formData.get('amount'),
+     status: formData.get('status'),
+   });
+  
+   const amountInCents = amount * 100;
+  
+   await sql`
+     UPDATE invoices
+     SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+     WHERE id = ${id}
+   `;
+  
+   revalidatePath('/dashboard/invoices');
+   redirect('/dashboard/invoices');
+ }
+ ```
+
 
 ### 13. Handling Errors
-> #### Adding ```try/catch``` to Server Actions
+ #### Adding ```try/catch``` to Server Actions
 >> JavaScript's ```try/catch``` allows you to handle errors gracefully.
 >>
 >> ```ts

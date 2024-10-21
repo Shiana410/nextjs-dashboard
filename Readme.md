@@ -653,36 +653,36 @@ There are a few cases where you have to write database queries:
 ### 11. Adding Search and Pagination
 > #### Starting code
 >>
-```tsx
-/*/app/dashboard/invoices/page.tsx*/
-import Pagination from '@/app/ui/invoices/pagination';
-import Search from '@/app/ui/search';
-import Table from '@/app/ui/invoices/table';
-import { CreateInvoice } from '@/app/ui/invoices/buttons';
-import { lusitana } from '@/app/ui/fonts';
-import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
-import { Suspense } from 'react';
- 
-export default async function Page() {
-  return (
-    <div className="w-full">
-      <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
-      </div>
-      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search invoices..." />
-        <CreateInvoice />
-      </div>
-      {/*  <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-        <Table query={query} currentPage={currentPage} />
-      </Suspense> */}
-      <div className="mt-5 flex w-full justify-center">
-        {/* <Pagination totalPages={totalPages} /> */}
-      </div>
-    </div>
-  );
-}
-```
+>> ```tsx
+>> /*/app/dashboard/invoices/page.tsx*/
+>> import Pagination from '@/app/ui/invoices/pagination';
+>> import Search from '@/app/ui/search';
+>> import Table from '@/app/ui/invoices/table';
+>> import { CreateInvoice } from '@/app/ui/invoices/buttons';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+>> import { Suspense } from 'react';
+>>  
+>> export default async function Page() {
+>>   return (
+>>     <div className="w-full">
+>>       <div className="flex w-full items-center justify-between">
+>>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+>>       </div>
+>>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+>>         <Search placeholder="Search invoices..." />
+>>         <CreateInvoice />
+>>       </div>
+>>       {/*  <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+>>         <Table query={query} currentPage={currentPage} />
+>>       </Suspense> */}
+>>       <div className="mt-5 flex w-full justify-center">
+>>         {/* <Pagination totalPages={totalPages} /> */}
+>>       </div>
+>>     </div>
+>>   );
+>> }
+>> ```
 >>
 >> Code Explanation:
 >> 1. ```<Search/>``` allows users to search for specific invoices.
@@ -705,127 +705,127 @@ export default async function Page() {
 >>> ##### 1. Capture the user's input
 >>>> Create a new handleSearch function, and add an onChange listener to the <input> element. onChange will invoke handleSearch whenever the input value changes.
 >>>>
-```tsx
-/*/app/ui/search.tsx*/
-'use client';
- 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
- 
-export default function Search({ placeholder }: { placeholder: string }) {
-  function handleSearch(term: string) {
-    console.log(term);
-  }
- 
-  return (
-    <div className="relative flex flex-1 flex-shrink-0">
-      <label htmlFor="search" className="sr-only">
-        Search
-      </label>
-      <input
-        className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-        placeholder={placeholder}
-        onChange={(e) => {
-          handleSearch(e.target.value);
-        }}
-      />
-      <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-    </div>
-  );
-}
-```
+>>>> ```tsx
+>>>> /*/app/ui/search.tsx*/
+>>>> 'use client';
+>>>>  
+>>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>>>  
+>>>> export default function Search({ placeholder }: { placeholder: string }) {
+>>>>   function handleSearch(term: string) {
+>>>>     console.log(term);
+>>>>   }
+>>>>  
+>>>>   return (
+>>>>     <div className="relative flex flex-1 flex-shrink-0">
+>>>>       <label htmlFor="search" className="sr-only">
+>>>>         Search
+>>>>       </label>
+>>>>       <input
+>>>>         className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+>>>>         placeholder={placeholder}
+>>>>         onChange={(e) => {
+>>>>           handleSearch(e.target.value);
+>>>>         }}
+>>>>       />
+>>>>       <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+>>>>     </div>
+>>>>   );
+>>>> }
+>>>> ```
 >>>> 
 >>> ##### 2. Update the URL with the search params.
 >>>> Import the ```useSearchParams``` hook from ```'next/navigation'```, and assign it to a variable:
 >>>>
-```tsx
-/*/app/ui/search.tsx*/
-'use client';
- 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useSearchParams } from 'next/navigation';
- 
-export default function Search() {
-  const searchParams = useSearchParams();
- 
-  function handleSearch(term: string) {
-    console.log(term);
-  }
-  // ...
-}
-```
+>>>> ```tsx
+>>>> /*/app/ui/search.tsx*/
+>>>> 'use client';
+>>>>  
+>>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>>> import { useSearchParams } from 'next/navigation';
+>>>>  
+>>>> export default function Search() {
+>>>>   const searchParams = useSearchParams();
+>>>>  
+>>>>   function handleSearch(term: string) {
+>>>>     console.log(term);
+>>>>   }
+>>>>   // ...
+>>>> }
+>>>> ```
 >>>>
 >>>> Inside ```handleSearch```, create a new ```URLSearchParams``` instance using your new ```searchParams``` variable.
 >>>>
-```tsx
-/*/app/ui/search.tsx*/
-'use client';
- 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useSearchParams } from 'next/navigation';
- 
-export default function Search() {
-  const searchParams = useSearchParams();
- 
-  function handleSearch(term: string) {
-    const params = new URLSearchParams(searchParams);
-  }
-  // ...
-}
-```
+>>>> ```tsx
+>>>> /*/app/ui/search.tsx*/
+>>>> 'use client';
+>>>>  
+>>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>>> import { useSearchParams } from 'next/navigation';
+>>>>  
+>>>> export default function Search() {
+>>>>   const searchParams = useSearchParams();
+>>>>  
+>>>>   function handleSearch(term: string) {
+>>>>     const params = new URLSearchParams(searchParams);
+>>>>   }
+>>>>   // ...
+>>>> }
+>>>> ```
 >>>>
 >>>> ```URLSearchParams``` is a Web API that provides utility methods for manipulating the URL query parameters. Instead of creating a complex string literal, you can use it to get the params string like ```?page=1&query=a```.
 >>>>
 >>>> Next, ```set``` the params string based on the user’s input. If the input is empty, you want to ```delete``` it:
 >>>>
-```tsx
-/*/app/ui/search.tsx*/
-'use client';
- 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useSearchParams } from 'next/navigation';
- 
-export default function Search() {
-  const searchParams = useSearchParams();
- 
-  function handleSearch(term: string) {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set('query', term);
-    } else {
-      params.delete('query');
-    }
-  }
-  // ...
-}
-```
+>>>> ```tsx
+>>>> /*/app/ui/search.tsx*/
+>>>> 'use client';
+>>>>  
+>>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>>> import { useSearchParams } from 'next/navigation';
+>>>>  
+>>>> export default function Search() {
+>>>>   const searchParams = useSearchParams();
+>>>>  
+>>>>   function handleSearch(term: string) {
+>>>>     const params = new URLSearchParams(searchParams);
+>>>>     if (term) {
+>>>>       params.set('query', term);
+>>>>     } else {
+>>>>       params.delete('query');
+>>>>     }
+>>>>   }
+>>>>   // ...
+>>>> }
+>>>> ```
 >>>>
 >>>> You can use Next.js's ```useRouter``` and ```usePathname``` hooks to update the URL.
 >>>>
 >>>> Import ```useRouter``` and ```usePathname``` from ```'next/navigation'```, and use the ```replace``` method from ```useRouter()``` inside ```handleSearch```:
 >>>>
-```tsx
-/*/app/ui/search.tsx*/
-'use client';
- 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
- 
-export default function Search() {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-  const { replace } = useRouter();
- 
-  function handleSearch(term: string) {
-    const params = new URLSearchParams(searchParams);
-    if (term) {
-      params.set('query', term);
-    } else {
-      params.delete('query');
-    }
-    replace(`${pathname}?${params.toString()}`);
-  }
-}
-```
+>>>> ```tsx
+>>>> /*/app/ui/search.tsx*/
+>>>> 'use client';
+>>>>  
+>>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>>> import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+>>>>  
+>>>> export default function Search() {
+>>>>   const searchParams = useSearchParams();
+>>>>   const pathname = usePathname();
+>>>>   const { replace } = useRouter();
+>>>>  
+>>>>   function handleSearch(term: string) {
+>>>>     const params = new URLSearchParams(searchParams);
+>>>>     if (term) {
+>>>>       params.set('query', term);
+>>>>     } else {
+>>>>       params.delete('query');
+>>>>     }
+>>>>     replace(`${pathname}?${params.toString()}`);
+>>>>   }
+>>>> }
+>>>> ```
 >>>>
 >>>> Here's a breakdown of what's happening:
 >>>> + ```${pathname}``` is the current path, in your case, ```"/dashboard/invoices"```.
@@ -836,248 +836,249 @@ export default function Search() {
 >>> ##### 3. Keeping the URL and input in sync
 >>>> To ensure the input field is in sync with the URL and will be populated when sharing, you can pass a ```defaultValue``` to input by reading from ```searchParams```:
 >>>>
-```tsx
-/*/app/ui/search.tsx*/
-<input
-  className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
-  placeholder={placeholder}
-  onChange={(e) => {
-    handleSearch(e.target.value);
-  }}
-  defaultValue={searchParams.get('query')?.toString()}
-/>
-```
+>>>> ```tsx
+>>>> /*/app/ui/search.tsx*/
+>>>> <input
+>>>>   className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+>>>>   placeholder={placeholder}
+>>>>   onChange={(e) => {
+>>>>     handleSearch(e.target.value);
+>>>>   }}
+>>>>   defaultValue={searchParams.get('query')?.toString()}
+>>>> />
+>>>> ```
 >>>>
 >>> ##### 4. Updating the table
 >>>> Page components accept a prop called ```searchParams```, so you can pass the current URL params to the ```<Table>``` component.
 >>>>
-```tsx
-/*/app/dashboard/invoices/page.tsx*/
-import Pagination from '@/app/ui/invoices/pagination';
-import Search from '@/app/ui/search';
-import Table from '@/app/ui/invoices/table';
-import { CreateInvoice } from '@/app/ui/invoices/buttons';
-import { lusitana } from '@/app/ui/fonts';
-import { Suspense } from 'react';
-import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
- 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: {
-    query?: string;
-    page?: string;
-  };
-}) {
-  const query = searchParams?.query || '';
-  const currentPage = Number(searchParams?.page) || 1;
- 
-  return (
-    <div className="w-full">
-      <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
-      </div>
-      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search invoices..." />
-        <CreateInvoice />
-      </div>
-      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-        <Table query={query} currentPage={currentPage} />
-      </Suspense>
-      <div className="mt-5 flex w-full justify-center">
-        {/* <Pagination totalPages={totalPages} /> */}
-      </div>
-    </div>
-  );
-}
-```
+>>>> ```tsx
+>>>> /*/app/dashboard/invoices/page.tsx*/
+>>>> import Pagination from '@/app/ui/invoices/pagination';
+>>>> import Search from '@/app/ui/search';
+>>>> import Table from '@/app/ui/invoices/table';
+>>>> import { CreateInvoice } from '@/app/ui/invoices/buttons';
+>>>> import { lusitana } from '@/app/ui/fonts';
+>>>> import { Suspense } from 'react';
+>>>> import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+>>>>  
+>>>> export default async function Page({
+>>>>   searchParams,
+>>>> }: {
+>>>>   searchParams?: {
+>>>>     query?: string;
+>>>>     page?: string;
+>>>>   };
+>>>> }) {
+>>>>   const query = searchParams?.query || '';
+>>>>   const currentPage = Number(searchParams?.page) || 1;
+>>>>  
+>>>>   return (
+>>>>     <div className="w-full">
+>>>>       <div className="flex w-full items-center justify-between">
+>>>>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+>>>>       </div>
+>>>>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+>>>>         <Search placeholder="Search invoices..." />
+>>>>         <CreateInvoice />
+>>>>       </div>
+>>>>       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+>>>>         <Table query={query} currentPage={currentPage} />
+>>>>       </Suspense>
+>>>>       <div className="mt-5 flex w-full justify-center">
+>>>>         {/* <Pagination totalPages={totalPages} /> */}
+>>>>       </div>
+>>>>     </div>
+>>>>   );
+>>>> }
+>>>> ```
 >>>>
 >>>> If you navigate to the ```<Table```> Component, you'll see that the two props, ```query``` and ```currentPage```, are passed to the ```fetchFilteredInvoices()``` function which returns the invoices that match the query.
 >>>>
-```tsx
-/*/app/ui/invoices/table.tsx*/
-// ...
-export default async function InvoicesTable({
-  query,
-  currentPage,
-}: {
-  query: string;
-  currentPage: number;
-}) {
-  const invoices = await fetchFilteredInvoices(query, currentPage);
-  // ...
-}
-```
+>>>> ```tsx
+>>>> /*/app/ui/invoices/table.tsx*/
+>>>> // ...
+>>>> export default async function InvoicesTable({
+>>>>   query,
+>>>>   currentPage,
+>>>> }: {
+>>>>   query: string;
+>>>>   currentPage: number;
+>>>> }) {
+>>>>   const invoices = await fetchFilteredInvoices(query, currentPage);
+>>>>   // ...
+>>>> }
+>>>> ```
 >>>>
 > #### Debouncing
 >> Inside your ```handleSearch``` function, add the following ```console.log```:
 >>
-```
-/*/app/ui/search.tsx*/
-function handleSearch(term: string) {
-  console.log(`Searching... ${term}`);
- 
-  const params = new URLSearchParams(searchParams);
-  if (term) {
-    params.set('query', term);
-  } else {
-    params.delete('query');
-  }
-  replace(`${pathname}?${params.toString()}`);
-}
-```
+>> ```
+>> /*/app/ui/search.tsx*/
+>> function handleSearch(term: string) {
+>>   console.log(`Searching... ${term}`);
+>>  
+>>   const params = new URLSearchParams(searchParams);
+>>   if (term) {
+>>     params.set('query', term);
+>>   } else {
+>>     params.delete('query');
+>>   }
+>>   replace(`${pathname}?${params.toString()}`);
+>> }
+>> ```
 >> The URL is updated on every keystroke. This isn't a problem as our application is small, but imagine if your application had thousands of users, each sending a new request to your database on each keystroke.
 >> 
 >> Debouncing is a programming practice that limits the rate at which a function can fire. In our case, you only want to query the database when the user has stopped typing.
 >> 
->> You can implement debouncing in a few ways, including manually creating your own debounce function.
+>> You can implement debouncing in a few ways, including manually creating your debounce function.
 >> 
 >> Install ```use-debounce```:
 >> ```pnpm i use-debounce```
 >> 
 >> In your ```<Search>``` Component, import a function called ```useDebouncedCallback```:
 >>
-```
-/*/app/ui/search.tsx*/
-// ...
-import { useDebouncedCallback } from 'use-debounce';
- 
-// Inside the Search Component...
-const handleSearch = useDebouncedCallback((term) => {
-  console.log(`Searching... ${term}`);
- 
-  const params = new URLSearchParams(searchParams);
-  if (term) {
-    params.set('query', term);
-  } else {
-    params.delete('query');
-  }
-  replace(`${pathname}?${params.toString()}`);
-}, 300);
-```
+>> ```
+>> /*/app/ui/search.tsx*/
+>> // ...
+>> import { useDebouncedCallback } from 'use-debounce';
+>>  
+>> // Inside the Search Component...
+>> const handleSearch = useDebouncedCallback((term) => {
+>>   console.log(`Searching... ${term}`);
+>>  
+>>   const params = new URLSearchParams(searchParams);
+>>   if (term) {
+>>     params.set('query', term);
+>>   } else {
+>>     params.delete('query');
+>>   }
+>>   replace(`${pathname}?${params.toString()}`);
+>> }, 300);
+>> ```
 >>
 >> This function will wrap the contents of ```handleSearch``` and only run the code after a specific time once the user has stopped typing (300ms).
+>> 
 > #### Adding pagination
->> After introducing the search feature, you'll notice the table displays only 6 invoices at a time. This is because the ```fetchFilteredInvoices()``` function in ```data.ts``` returns a maximum of 6 invoices per page.
+>> After introducing the search feature, the table displays only six invoices simultaneously. This is because the ```fetchFilteredInvoices()``` function in ```data.ts``` returns a maximum of 6 invoices per page.
 >> 
->> Adding pagination allows users to navigate through the different pages to view all the invoices. Let's see how you can implement pagination using URL params, just like you did with search.
+>> Adding pagination allows users to navigate the different pages to view all the invoices. Let's see how you can implement pagination using URL params, just like you did with search.
 >> 
->> Navigate to the ```<Pagination/>``` component and you'll notice that it's a Client Component. You don't want to fetch data on the client as this would expose your database secrets (remember, you're not using an API layer). Instead, you can fetch the data on the server, and pass it to the component as a prop.
+>> Navigate to the ```<Pagination/>``` component and you'll notice it's a Client Component. You don't want to fetch data on the client as this would expose your database secrets (remember, you're not using an API layer). Instead, you can fetch the data on the server, and pass it to the component as a prop.
 >> 
 >> In ```/dashboard/invoices/page.tsx```, import a new function called ```fetchInvoicesPages``` and pass the ```query``` from ```searchParams``` as an argument:
 >>
-```
-/*/app/dashboard/invoices/page.tsx*/
-// ...
-import { fetchInvoicesPages } from '@/app/lib/data';
- 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: {
-    query?: string,
-    page?: string,
-  },
-}) {
-  const query = searchParams?.query || '';
-  const currentPage = Number(searchParams?.page) || 1;
- 
-  const totalPages = await fetchInvoicesPages(query);
- 
-  return (
-    // ...
-  );
-}
-```
+>> ```
+>> /*/app/dashboard/invoices/page.tsx*/
+>> // ...
+>> import { fetchInvoicesPages } from '@/app/lib/data';
+>>  
+>> export default async function Page({
+>>   searchParams,
+>> }: {
+>>   searchParams?: {
+>>     query?: string,
+>>     page?: string,
+>>   },
+>> }) {
+>>   const query = searchParams?.query || '';
+>>   const currentPage = Number(searchParams?.page) || 1;
+>>  
+>>   const totalPages = await fetchInvoicesPages(query);
+>>  
+>>   return (
+>>     // ...
+>>   );
+>> }
+>> ```
 >>
->> ```fetchInvoicesPages``` returns the total number of pages based on the search query. For example, if there are 12 invoices that match the search query, and each page displays 6 invoices, then the total number of pages would be 2.
+>> ```fetchInvoicesPages``` returns the total number of pages based on the search query. For example, if 12 invoices match the search query, and each page displays six invoices, the total number of pages would be 2.
 >>
 >> Next, pass the ```totalPages``` prop to the ```<Pagination/>``` component:
 >>
-```
-/*/app/dashboard/invoices/page.tsx*/
-// ...
- 
-export default async function Page({
-  searchParams,
-}: {
-  searchParams?: {
-    query?: string;
-    page?: string;
-  };
-}) {
-  const query = searchParams?.query || '';
-  const currentPage = Number(searchParams?.page) || 1;
- 
-  const totalPages = await fetchInvoicesPages(query);
- 
-  return (
-    <div className="w-full">
-      <div className="flex w-full items-center justify-between">
-        <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
-      </div>
-      <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
-        <Search placeholder="Search invoices..." />
-        <CreateInvoice />
-      </div>
-      <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
-        <Table query={query} currentPage={currentPage} />
-      </Suspense>
-      <div className="mt-5 flex w-full justify-center">
-        <Pagination totalPages={totalPages} />
-      </div>
-    </div>
-  );
-}
-```
+>> ```
+>> /*/app/dashboard/invoices/page.tsx*/
+>> // ...
+>>  
+>> export default async function Page({
+>>   searchParams,
+>> }: {
+>>   searchParams?: {
+>>     query?: string;
+>>     page?: string;
+>>   };
+>> }) {
+>>   const query = searchParams?.query || '';
+>>   const currentPage = Number(searchParams?.page) || 1;
+>>  
+>>   const totalPages = await fetchInvoicesPages(query);
+>>  
+>>   return (
+>>     <div className="w-full">
+>>       <div className="flex w-full items-center justify-between">
+>>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+>>       </div>
+>>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+>>         <Search placeholder="Search invoices..." />
+>>         <CreateInvoice />
+>>       </div>
+>>       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+>>         <Table query={query} currentPage={currentPage} />
+>>       </Suspense>
+>>       <div className="mt-5 flex w-full justify-center">
+>>         <Pagination totalPages={totalPages} />
+>>       </div>
+>>     </div>
+>>   );
+>> }
+>> ```
 >>
 >> Navigate to the ```<Pagination/>``` component and import the ```usePathname``` and ```useSearchParams``` hooks. We will use this to get the current page and set the new page. Make sure to also uncomment the code in this component. Your application will break temporarily as you haven't implemented the ```<Pagination/>``` logic yet. Let's do that now!
 >>
-```
-/*/app/ui/invoices/pagination.tsx*/
-'use client';
- 
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
-import Link from 'next/link';
-import { generatePagination } from '@/app/lib/utils';
-import { usePathname, useSearchParams } from 'next/navigation';
- 
-export default function Pagination({ totalPages }: { totalPages: number }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1;
- 
-  // ...
-}
-```
+>> ```tsx
+>> /*/app/ui/invoices/pagination.tsx*/
+>> 'use client';
+>>  
+>> import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+>> import clsx from 'clsx';
+>> import Link from 'next/link';
+>> import { generatePagination } from '@/app/lib/utils';
+>> import { usePathname, useSearchParams } from 'next/navigation';
+>>  
+>> export default function Pagination({ totalPages }: { totalPages: number }) {
+>>   const pathname = usePathname();
+>>   const searchParams = useSearchParams();
+>>   const currentPage = Number(searchParams.get('page')) || 1;
+>>  
+>>   // ...
+>> }
+>> ```
 >>
 >> Next, create a new function inside the ```<Pagination>``` Component called ```createPageURL```. Similarly to the search, you'll use ```URLSearchParams``` to set the new page number, and pathName to create the URL string.
 >>
-```
-/*/app/ui/invoices/pagination.tsx*/
-'use client';
- 
-import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
-import Link from 'next/link';
-import { generatePagination } from '@/app/lib/utils';
-import { usePathname, useSearchParams } from 'next/navigation';
- 
-export default function Pagination({ totalPages }: { totalPages: number }) {
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const currentPage = Number(searchParams.get('page')) || 1;
- 
-  const createPageURL = (pageNumber: number | string) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('page', pageNumber.toString());
-    return `${pathname}?${params.toString()}`;
-  };
- 
-  // ...
-}
-```
+>> ```tsx
+>> /*/app/ui/invoices/pagination.tsx*/
+>> 'use client';
+>>  
+>> import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+>> import clsx from 'clsx';
+>> import Link from 'next/link';
+>> import { generatePagination } from '@/app/lib/utils';
+>> import { usePathname, useSearchParams } from 'next/navigation';
+>>  
+>> export default function Pagination({ totalPages }: { totalPages: number }) {
+>>   const pathname = usePathname();
+>>   const searchParams = useSearchParams();
+>>   const currentPage = Number(searchParams.get('page')) || 1;
+>>  
+>>   const createPageURL = (pageNumber: number | string) => {
+>>     const params = new URLSearchParams(searchParams);
+>>     params.set('page', pageNumber.toString());
+>>     return `${pathname}?${params.toString()}`;
+>>   };
+>>  
+>>   // ...
+>> }
+>> ```
 >>
 >> Here's a breakdown of what's happening:
 >>

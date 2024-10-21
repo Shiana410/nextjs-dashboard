@@ -1155,6 +1155,7 @@ There are a few cases where you have to write database queries:
 >>>   );
 >>> }
 >>> ```
+>>> 
 >> ##### 2. Create a server action
 >>> In your ```actions.ts``` file, create a new async function that accepts ```formData```:
 >>>
@@ -1532,7 +1533,7 @@ There are a few cases where you have to write database queries:
 >>   redirect('/dashboard/invoices');
 >> }
 >> ```
-
+>
 > #### Deleting an invoice
 >> To delete an invoice using a Server Action, wrap the delete button in a ```<form>``` element and pass the ```id``` to the Server Action using ```bind```:
 >>

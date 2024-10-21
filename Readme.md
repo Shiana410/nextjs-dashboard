@@ -80,7 +80,7 @@ There are a few cases where you have to write database queries:
 > #### Fetching data for the dashboard overview page
 >> Navigate to ```/app/dashboard/page.tsx``` and add the following code.
 >>
-```tsx
+```tsx:page.tsx
 import { Card } from '@/app/ui/dashboard/cards';
 import RevenueChart from '@/app/ui/dashboard/revenue-chart';
 import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
@@ -145,7 +145,7 @@ const data = await sql<LatestInvoiceRaw>`
 >>
 >> In the ```/app/dashboard/page.tsx```, import the ```fetchLatestInvoices``` function:
 >>
-```tsx
+```tsx:page.tsx
 import { Card } from '@/app/ui/dashboard/cards';
 import RevenueChart from '@/app/ui/dashboard/revenue-chart';
 import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
@@ -163,7 +163,7 @@ export default async function Page() {
 >>
 > #### Fetch data for the ```<Card>``` components
 >>
-```tsx
+```tsx:page.tsx
 /*'@/app/dashboard/page.tsx'*/
 import { Card } from '@/app/ui/dashboard/cards';
 import RevenueChart from '@/app/ui/dashboard/revenue-chart';
@@ -234,7 +234,7 @@ const {
 >> A common way to avoid waterfalls is to initiate all data requests simultaneously.
 >> In JavaScript, you can use the Promise.all() or Promise.allSettled() functions to initiate all promises at the same time. For example, in data.ts, we're using Promise.all() in the fetchCardData() function:
 >>
-```ts
+```ts:data.ts
 export async function fetchCardData() {
   try {
     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;

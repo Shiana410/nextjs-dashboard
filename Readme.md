@@ -270,14 +270,18 @@ export async function fetchCardData() {
 >> Static rendering is useful for UI with no data or data that is shared across users, such as a static blog post or a product page. It might not be a good fit for a dashboard that has personalized data which is regularly updated.
 >> 
 >> The opposite of static rendering is dynamic rendering.
+>> 
 > #### What is Dynamic Rendering?
 >> With dynamic rendering, content is rendered on the server for each user at request time (when the user visits the page). There are a couple of benefits of dynamic rendering:
 >> + Real-Time Data - Dynamic rendering allows your application to display real-time or frequently updated data. This is ideal for applications where data changes often.
 >> + User-Specific Content - It's easier to serve personalized content, such as dashboards or user profiles, and update the data based on user interaction.
 >> + Request Time Information - Dynamic rendering allows you to access information that can only be known at request time, such as cookies or the URL search parameters.
+>>
 > #### Simulating a Slow Data Fetch
 >> The dashboard application we're building is dynamic.
+>> 
 >> However, one problem is still mentioned in the previous chapter. What happens if one data request is slower than all the others?
+>> 
 >> Let's simulate a slow data fetch. In your data.ts file, uncomment the console.log and setTimeout inside fetchRevenue():
 >>>
 ```ts
@@ -678,6 +682,7 @@ export default async function Page() {
 }
 ```
 >>
+>> Code Explanation:
 >> 1. ```<Search/>``` allows users to search for specific invoices.
 >> 2. ```<Pagination/>``` allows users to navigate between pages of invoices.
 >> 3. ```<Table/>``` displays the invoices.
@@ -693,6 +698,7 @@ export default async function Page() {
 >> + ```useSearchParams```- Allows you to access the parameters of the current URL. For example, the search params for this URL ```/dashboard/invoices?page=1&query=pending``` would look like this: {```page: '1', query: 'pending'}```.
 >> + ```usePathname``` - Lets you read the current URL's pathname. For example, for the route ```/dashboard/invoices```, ```usePathname``` would return ```'/dashboard/invoices'```.
 >> + ```useRouter``` - Enables programmatically navigation between routes within client components. There are multiple methods you can use.
+>>
 >> ##### Implementation steps:
 >>> ##### 1. Capture the user's input
 >>>> Create a new handleSearch function, and add an onChange listener to the <input> element. onChange will invoke handleSearch whenever the input value changes.

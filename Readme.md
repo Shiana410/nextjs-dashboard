@@ -1534,9 +1534,8 @@ There are a few cases where you have to write database queries:
 >> }
 >> ```
 >
-> #### Deleting an invoice
->> To delete an invoice using a Server Action, wrap the delete button in a ```<form>``` element and pass the ```id``` to the Server Action using ```bind```:
->>
+#### Deleting an invoice
+To delete an invoice using a Server Action, wrap the delete button in a ```<form>``` element and pass the ```id``` to the Server Action using ```bind```:
 >> ```tsx
 >> /*/app/ui/invoices/buttons.tsx*/
 >> import { deleteInvoice } from '@/app/lib/actions';

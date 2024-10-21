@@ -361,7 +361,7 @@ There are a few cases where you have to write database queries:
 >> To do so, you'll need to move the data fetch to the component. Let's update the code to see what that'll look like:
 >> Delete all instances of ```fetchRevenue()``` and its data from ```/dashboard/(overview)/page.tsx```:
 >>
->> ```
+>> ```tsx
 >> import { Card } from '@/app/ui/dashboard/cards';
 >> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
 >> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
@@ -429,7 +429,8 @@ There are a few cases where you have to write database queries:
 >>     </main>
 >>   );
 >> }
->>
+>> ```
+>> 
 >> Finally, update the ```<RevenueChart>``` component to fetch its data and remove the prop passed to it:
 >>
 >> ```tsx

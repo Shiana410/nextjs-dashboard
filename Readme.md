@@ -80,52 +80,53 @@ There are a few cases where you have to write database queries:
 > #### Fetching data for the dashboard overview page
 >> Navigate to ```/app/dashboard/page.tsx``` and add the following code.
 >>
-```tsx:page.tsx
-import { Card } from '@/app/ui/dashboard/cards';
-import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
-import { lusitana } from '@/app/ui/fonts';
- 
-export default async function Page() {
-  return (
-    <main>
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
-        Dashboard
-      </h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        {/* <Card title="Collected" value={totalPaidInvoices} type="collected" /> */}
-        {/* <Card title="Pending" value={totalPendingInvoices} type="pending" /> */}
-        {/* <Card title="Total Invoices" value={numberOfInvoices} type="invoices" /> */}
-        {/* <Card
-          title="Total Customers"
-          value={numberOfCustomers}
-          type="customers"
-        /> */}
-      </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
-        {/* <RevenueChart revenue={revenue}  /> */}
-        {/* <LatestInvoices latestInvoices={latestInvoices} /> */}
-      </div>
-    </main>
-  );
-}
-```
+>> ```tsx:page.tsx
+>> import { Card } from '@/app/ui/dashboard/cards';
+>> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+>> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+>> import { lusitana } from '@/app/ui/fonts';
+>>  
+>> export default async function Page() {
+>>   return (
+>>     <main>
+>>       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+>>         Dashboard
+>>       </h1>
+>>       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+>>         {/* <Card title="Collected" value={totalPaidInvoices} type="collected" /> */}
+>>         {/* <Card title="Pending" value={totalPendingInvoices} type="pending" /> */}
+>>         {/* <Card title="Total Invoices" value={numberOfInvoices} type="invoices" /> */}
+>>         {/* <Card
+>>           title="Total Customers"
+>>           value={numberOfCustomers}
+>>           type="customers"
+>>         /> */}
+>>       </div>
+>>       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
+>>         {/* <RevenueChart revenue={revenue}  /> */}
+>>         {/* <LatestInvoices latestInvoices={latestInvoices} /> */}
+>>       </div>
+>>     </main>
+>>   );
+>> }
+>> ```
 >>
 > #### Fetching data for ```<RevenueChart/>```
 >> To fetch data for the <RevenueChart/> component, import the fetchRevenue function from data.ts and call it inside your component:
 >>
-```tsx
-import { Card } from '@/app/ui/dashboard/cards';
-import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
-import { lusitana } from '@/app/ui/fonts';
-import { fetchRevenue } from '@/app/lib/data';
- 
-export default async function Page() {
-  const revenue = await fetchRevenue();
-  // ...
-}
-```
+>> ```tsx
+>> import { Card } from '@/app/ui/dashboard/cards';
+>> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+>> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { fetchRevenue } from '@/app/lib/data';
+>>  
+>> export default async function Page() {
+>>   const revenue = await fetchRevenue();
+>>   // ...
+>> }
+>> ```
+>> 
 >> Then, uncomment the ```<RevenueChart/>``` component, navigate to the component file (```/app/ui/dashboard/revenue-chart.tsx```), and uncomment the code inside it. Check https://localhost:3000/dashboard. You should be able to see a chart that uses revenue data.
 >> 
 > #### Fetching data for ```<LatestInvoices/>```
@@ -133,81 +134,81 @@ export default async function Page() {
 >> 
 >> Instead of sorting the latest invoices in-memory, you can use an SQL query to fetch only the last five invoices. For example, this is the SQL query from your data.ts file:
 >>
-```tsx
-// Fetch the last 5 invoices, sorted by date
-const data = await sql<LatestInvoiceRaw>`
-  SELECT invoices.amount, customers.name, customers.image_url, customers.email
-  FROM invoices
-  JOIN customers ON invoices.customer_id = customers.id
-  ORDER BY invoices.date DESC
-  LIMIT 5`;
-```
+>> ```tsx
+>> // Fetch the last 5 invoices, sorted by date
+>> const data = await sql<LatestInvoiceRaw>`
+>>   SELECT invoices.amount, customers.name, customers.image_url, customers.email
+>>   FROM invoices
+>>   JOIN customers ON invoices.customer_id = customers.id
+>>   ORDER BY invoices.date DESC
+>>   LIMIT 5`;
+>> ```
 >>
 >> In the ```/app/dashboard/page.tsx```, import the ```fetchLatestInvoices``` function:
 >>
-```tsx:page.tsx
-import { Card } from '@/app/ui/dashboard/cards';
-import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
-import { lusitana } from '@/app/ui/fonts';
-import { fetchRevenue, fetchLatestInvoices } from '@/app/lib/data';
- 
-export default async function Page() {
-  const revenue = await fetchRevenue();
-  const latestInvoices = await fetchLatestInvoices();
-  // ...
-}
-```
+>> ```tsx:page.tsx
+>> import { Card } from '@/app/ui/dashboard/cards';
+>> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+>> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { fetchRevenue, fetchLatestInvoices } from '@/app/lib/data';
+>>  
+>> export default async function Page() {
+>>   const revenue = await fetchRevenue();
+>>   const latestInvoices = await fetchLatestInvoices();
+>>   // ...
+>> }
+>> ```
 >>
 >>　Then, uncomment the ```<LatestInvoices />``` component. You must also uncomment the relevant code in the ```<LatestInvoices />``` component, located at ```/app/ui/dashboard/latest-invoices```.
 >>
 > #### Fetch data for the ```<Card>``` components
 >>
-```tsx:page.tsx
-/*'@/app/dashboard/page.tsx'*/
-import { Card } from '@/app/ui/dashboard/cards';
-import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
-import { lusitana } from '@/app/ui/fonts';
-import {
-  fetchRevenue,
-  fetchLatestInvoices,
-  fetchCardData,
-} from '@/app/lib/data';
- 
-export default async function Page() {
-  const revenue = await fetchRevenue();
-  const latestInvoices = await fetchLatestInvoices();
-  const {
-    numberOfInvoices,
-    numberOfCustomers,
-    totalPaidInvoices,
-    totalPendingInvoices,
-  } = await fetchCardData();
- 
-  return (
-    <main>
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
-        Dashboard
-      </h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card title="Collected" value={totalPaidInvoices} type="collected" />
-        <Card title="Pending" value={totalPendingInvoices} type="pending" />
-        <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-        <Card
-          title="Total Customers"
-          value={numberOfCustomers}
-          type="customers"
-        />
-      </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
-        <RevenueChart revenue={revenue} />
-        <LatestInvoices latestInvoices={latestInvoices} />
-      </div>
-    </main>
-  );
-}
-```
+>> ```tsx:page.tsx
+>> /*'@/app/dashboard/page.tsx'*/
+>> import { Card } from '@/app/ui/dashboard/cards';
+>> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+>> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import {
+>>   fetchRevenue,
+>>   fetchLatestInvoices,
+>>   fetchCardData,
+>> } from '@/app/lib/data';
+>>  
+>> export default async function Page() {
+>>   const revenue = await fetchRevenue();
+>>   const latestInvoices = await fetchLatestInvoices();
+>>   const {
+>>     numberOfInvoices,
+>>     numberOfCustomers,
+>>     totalPaidInvoices,
+>>     totalPendingInvoices,
+>>   } = await fetchCardData();
+>>  
+>>   return (
+>>     <main>
+>>       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+>>         Dashboard
+>>       </h1>
+>>       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+>>         <Card title="Collected" value={totalPaidInvoices} type="collected" />
+>>         <Card title="Pending" value={totalPendingInvoices} type="pending" />
+>>         <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
+>>         <Card
+>>           title="Total Customers"
+>>           value={numberOfCustomers}
+>>           type="customers"
+>>         />
+>>       </div>
+>>       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
+>>         <RevenueChart revenue={revenue} />
+>>         <LatestInvoices latestInvoices={latestInvoices} />
+>>       </div>
+>>     </main>
+>>   );
+>> }
+>> ```
 >> However, there are two things you need to be aware of:
 >> + The data requests unintentionally block each other, creating a request waterfall.
 >> + By default, Next.js prerenders routes to improve performance, called Static Rendering. So, if your data changes, it won't be reflected in your dashboard.
@@ -216,16 +217,16 @@ export default async function Page() {
 >> A "waterfall" refers to a sequence of network requests that depend on the completion of previous requests. In the case of data fetching, each request can only begin once the previous request has returned data.
 >> For example, we need to wait for fetchRevenue() to execute before fetchLatestInvoices() can start running, and so on.
 >>
-```tsx
-const revenue = await fetchRevenue();
-const latestInvoices = await fetchLatestInvoices(); // wait for fetchRevenue() to finish
-const {
-  numberOfInvoices,
-  numberOfCustomers,
-  totalPaidInvoices,
-  totalPendingInvoices,
-} = await fetchCardData(); // wait for fetchLatestInvoices() to finish
-```
+>> ```tsx
+>> const revenue = await fetchRevenue();
+>> const latestInvoices = await fetchLatestInvoices(); // wait for fetchRevenue() to finish
+>> const {
+>>   numberOfInvoices,
+>>   numberOfCustomers,
+>>   totalPaidInvoices,
+>>   totalPendingInvoices,
+>> } = await fetchCardData(); // wait for fetchLatestInvoices() to finish
+>> ```
 >> This pattern is not necessarily wrong. There may be cases where you want waterfalls because you want a condition to be satisfied before you make the subsequent request. For example, you should first fetch a user's ID and profile information. Once you have the ID, you might fetch their list of friends. In this case, each request is contingent on the data returned from the previous request.
 >> 
 >> However, this behaviour can also be unintentional and impact performance.
@@ -234,25 +235,25 @@ const {
 >> A common way to avoid waterfalls is to initiate all data requests simultaneously.
 >> In JavaScript, you can use the Promise.all() or Promise.allSettled() functions to initiate all promises at the same time. For example, in data.ts, we're using Promise.all() in the fetchCardData() function:
 >>
-```ts:data.ts
-export async function fetchCardData() {
-  try {
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
- 
-    const data = await Promise.all([
-      invoiceCountPromise,
-      customerCountPromise,
-      invoiceStatusPromise,
-    ]);
-    // ...
-  }
-}
-```
+>> ```ts:data.ts
+>> export async function fetchCardData() {
+>>   try {
+>>     const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
+>>     const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
+>>     const invoiceStatusPromise = sql`SELECT
+>>          SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
+>>          SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
+>>          FROM invoices`;
+>>  
+>>     const data = await Promise.all([
+>>       invoiceCountPromise,
+>>       customerCountPromise,
+>>       invoiceStatusPromise,
+>>     ]);
+>>     // ...
+>>   }
+>> }
+>> ```
 >> By using this pattern, you can:
 >> + Start executing all data fetches simultaneously, which can lead to performance gains.
 >> + Use a native JavaScript pattern that can be applied to any library or framework.
@@ -284,25 +285,25 @@ export async function fetchCardData() {
 >> 
 >> Let's simulate a slow data fetch. In your data.ts file, uncomment the console.log and setTimeout inside fetchRevenue():
 >>>
-```ts
-export async function fetchRevenue() {
-  try {
-    // We artificially delay a response for demo purposes.
-    // Don't do this in production :)
-    console.log('Fetching revenue data...');
-    await new Promise((resolve) => setTimeout(resolve, 3000));
- 
-    const data = await sql<Revenue>`SELECT * FROM revenue`;
- 
-    console.log('Data fetch completed after 3 seconds.');
- 
-    return data.rows;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch revenue data.');
-  }
-}
-```
+>> ```ts
+>> export async function fetchRevenue() {
+>>   try {
+>>     // We artificially delay a response for demo purposes.
+>>     // Don't do this in production :)
+>>     console.log('Fetching revenue data...');
+>>     await new Promise((resolve) => setTimeout(resolve, 3000));
+>>  
+>>     const data = await sql<Revenue>`SELECT * FROM revenue`;
+>>  
+>>     console.log('Data fetch completed after 3 seconds.');
+>>  
+>>     return data.rows;
+>>   } catch (error) {
+>>     console.error('Database Error:', error);
+>>     throw new Error('Failed to fetch revenue data.');
+>>   }
+>> }
+>> ```
 >>>
 >>>
 ### 9. Streaming
@@ -361,169 +362,169 @@ export default function Loading() {
 >> Delete all instances of ```fetchRevenue()``` and its data from ```/dashboard/(overview)/page.tsx```:
 >>
 ```
-import { Card } from '@/app/ui/dashboard/cards';
-import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
-import { lusitana } from '@/app/ui/fonts';
-import { fetchLatestInvoices, fetchCardData } from '@/app/lib/data'; // remove fetchRevenue
- 
-export default async function Page() {
-  const revenue = await fetchRevenue() // delete this line
-  const latestInvoices = await fetchLatestInvoices();
-  const {
-    numberOfInvoices,
-    numberOfCustomers,
-    totalPaidInvoices,
-    totalPendingInvoices,
-  } = await fetchCardData();
- 
-  return (
-    // ...
-  );
-}
-```
+>> import { Card } from '@/app/ui/dashboard/cards';
+>> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+>> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { fetchLatestInvoices, fetchCardData } from '@/app/lib/data'; // remove fetchRevenue
+>>  
+>> export default async function Page() {
+>>   const revenue = await fetchRevenue() // delete this line
+>>   const latestInvoices = await fetchLatestInvoices();
+>>   const {
+>>     numberOfInvoices,
+>>     numberOfCustomers,
+>>     totalPaidInvoices,
+>>     totalPendingInvoices,
+>>   } = await fetchCardData();
+>>  
+>>   return (
+>>     // ...
+>>   );
+>> }
+>> ```
 >>
 >> Then, import ```<Suspense>``` from React, and wrap it around ```<RevenueChart />```. You can pass it a fallback component called ```<RevenueChartSkeleton>```.
 >>
-```tsx
-/*/app/dashboard/(overview)/page.tsx*/
-import { Card } from '@/app/ui/dashboard/cards';
-import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
-import { lusitana } from '@/app/ui/fonts';
-import { fetchLatestInvoices, fetchCardData } from '@/app/lib/data';
-import { Suspense } from 'react';
-import { RevenueChartSkeleton } from '@/app/ui/skeletons';
- 
-export default async function Page() {
-  const latestInvoices = await fetchLatestInvoices();
-  const {
-    numberOfInvoices,
-    numberOfCustomers,
-    totalPaidInvoices,
-    totalPendingInvoices,
-  } = await fetchCardData();
- 
-  return (
-    <main>
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
-        Dashboard
-      </h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card title="Collected" value={totalPaidInvoices} type="collected" />
-        <Card title="Pending" value={totalPendingInvoices} type="pending" />
-        <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-        <Card
-          title="Total Customers"
-          value={numberOfCustomers}
-          type="customers"
-        />
-      </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
-        <Suspense fallback={<RevenueChartSkeleton />}>
-          <RevenueChart />
-        </Suspense>
-        <LatestInvoices latestInvoices={latestInvoices} />
-      </div>
-    </main>
-  );
-}
+>> ```tsx
+>> /*/app/dashboard/(overview)/page.tsx*/
+>> import { Card } from '@/app/ui/dashboard/cards';
+>> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+>> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { fetchLatestInvoices, fetchCardData } from '@/app/lib/data';
+>> import { Suspense } from 'react';
+>> import { RevenueChartSkeleton } from '@/app/ui/skeletons';
+>>  
+>> export default async function Page() {
+>>   const latestInvoices = await fetchLatestInvoices();
+>>   const {
+>>     numberOfInvoices,
+>>     numberOfCustomers,
+>>     totalPaidInvoices,
+>>     totalPendingInvoices,
+>>   } = await fetchCardData();
+>>  
+>>   return (
+>>     <main>
+>>       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+>>         Dashboard
+>>       </h1>
+>>       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+>>         <Card title="Collected" value={totalPaidInvoices} type="collected" />
+>>         <Card title="Pending" value={totalPendingInvoices} type="pending" />
+>>         <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
+>>         <Card
+>>           title="Total Customers"
+>>           value={numberOfCustomers}
+>>           type="customers"
+>>         />
+>>       </div>
+>>       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
+>>         <Suspense fallback={<RevenueChartSkeleton />}>
+>>           <RevenueChart />
+>>         </Suspense>
+>>         <LatestInvoices latestInvoices={latestInvoices} />
+>>       </div>
+>>     </main>
+>>   );
+>> }
 >>
 >> Finally, update the ```<RevenueChart>``` component to fetch its data and remove the prop passed to it:
 >>
-```tsx
-import { generateYAxis } from '@/app/lib/utils';
-import { CalendarIcon } from '@heroicons/react/24/outline';
-import { lusitana } from '@/app/ui/fonts';
-import { fetchRevenue } from '@/app/lib/data';
- 
-// ...
- 
-export default async function RevenueChart() { // Make component async, remove the props
-  const revenue = await fetchRevenue(); // Fetch data inside the component
- 
-  const chartHeight = 350;
-  const { yAxisLabels, topLabel } = generateYAxis(revenue);
- 
-  if (!revenue || revenue.length === 0) {
-    return <p className="mt-4 text-gray-400">No data available.</p>;
-  }
- 
-  return (
-    // ...
-  );
-}
-```
+>> ```tsx
+>> import { generateYAxis } from '@/app/lib/utils';
+>> import { CalendarIcon } from '@heroicons/react/24/outline';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { fetchRevenue } from '@/app/lib/data';
+>>  
+>> // ...
+>>  
+>> export default async function RevenueChart() { // Make component async, remove the props
+>>   const revenue = await fetchRevenue(); // Fetch data inside the component
+>>  
+>>   const chartHeight = 350;
+>>   const { yAxisLabels, topLabel } = generateYAxis(revenue);
+>>  
+>>   if (!revenue || revenue.length === 0) {
+>>     return <p className="mt-4 text-gray-400">No data available.</p>;
+>>   }
+>>  
+>>   return (
+>>     // ...
+>>   );
+>> }
+>> ```
 >>
 > #### Streaming ```<LatestInvoices>```
 >>
-```tsx
-/*'/app/dashboard/(overview)/page.tsx'*/
-import { Card } from '@/app/ui/dashboard/cards';
-import RevenueChart from '@/app/ui/dashboard/revenue-chart';
-import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
-import { lusitana } from '@/app/ui/fonts';
-import { fetchCardData } from '@/app/lib/data'; // Remove fetchLatestInvoices
-import { Suspense } from 'react';
-import {
-  RevenueChartSkeleton,
-  LatestInvoicesSkeleton,
-} from '@/app/ui/skeletons';
- 
-export default async function Page() {
-  // Remove `const latestInvoices = await fetchLatestInvoices()`
-  const {
-    numberOfInvoices,
-    numberOfCustomers,
-    totalPaidInvoices,
-    totalPendingInvoices,
-  } = await fetchCardData();
- 
-  return (
-    <main>
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
-        Dashboard
-      </h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Card title="Collected" value={totalPaidInvoices} type="collected" />
-        <Card title="Pending" value={totalPendingInvoices} type="pending" />
-        <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-        <Card
-          title="Total Customers"
-          value={numberOfCustomers}
-          type="customers"
-        />
-      </div>
-      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
-        <Suspense fallback={<RevenueChartSkeleton />}>
-          <RevenueChart />
-        </Suspense>
-        <Suspense fallback={<LatestInvoicesSkeleton />}>
-          <LatestInvoices />
-        </Suspense>
-      </div>
-    </main>
-  );
-}
-```
+>> ```tsx
+>> /*'/app/dashboard/(overview)/page.tsx'*/
+>> import { Card } from '@/app/ui/dashboard/cards';
+>> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
+>> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { fetchCardData } from '@/app/lib/data'; // Remove fetchLatestInvoices
+>> import { Suspense } from 'react';
+>> import {
+>>   RevenueChartSkeleton,
+>>   LatestInvoicesSkeleton,
+>> } from '@/app/ui/skeletons';
+>>  
+>> export default async function Page() {
+>>   // Remove `const latestInvoices = await fetchLatestInvoices()`
+>>   const {
+>>     numberOfInvoices,
+>>     numberOfCustomers,
+>>     totalPaidInvoices,
+>>     totalPendingInvoices,
+>>   } = await fetchCardData();
+>>  
+>>   return (
+>>     <main>
+>>       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+>>         Dashboard
+>>       </h1>
+>>       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+>>         <Card title="Collected" value={totalPaidInvoices} type="collected" />
+>>         <Card title="Pending" value={totalPendingInvoices} type="pending" />
+>>         <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
+>>         <Card
+>>           title="Total Customers"
+>>           value={numberOfCustomers}
+>>           type="customers"
+>>         />
+>>       </div>
+>>       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
+>>         <Suspense fallback={<RevenueChartSkeleton />}>
+>>           <RevenueChart />
+>>         </Suspense>
+>>         <Suspense fallback={<LatestInvoicesSkeleton />}>
+>>           <LatestInvoices />
+>>         </Suspense>
+>>       </div>
+>>     </main>
+>>   );
+>> }
+>> ```
 >>
 >>
-```tsx
-/*'/app/ui/dashboard/latest-invoices.tsx'*/
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
-import clsx from 'clsx';
-import Image from 'next/image';
-import { lusitana } from '@/app/ui/fonts';
-import { fetchLatestInvoices } from '@/app/lib/data';
- 
-export default async function LatestInvoices() { // Remove props
-  const latestInvoices = await fetchLatestInvoices();
- 
-  return (
-    // ...
-  );
-}
-```
+>> ```tsx
+>> /*'/app/ui/dashboard/latest-invoices.tsx'*/
+>> import { ArrowPathIcon } from '@heroicons/react/24/outline';
+>> import clsx from 'clsx';
+>> import Image from 'next/image';
+>> import { lusitana } from '@/app/ui/fonts';
+>> import { fetchLatestInvoices } from '@/app/lib/data';
+>>  
+>> export default async function LatestInvoices() { // Remove props
+>>   const latestInvoices = await fetchLatestInvoices();
+>>  
+>>   return (
+>>     // ...
+>>   );
+>> }
+>> ```
 >>
 > #### Grouping components
 >> Now you need to wrap the <Card> components in Suspense. You can fetch data for each individual card, but this could lead to a popping effect as the cards load in, this can be visually jarring for the user.
@@ -537,114 +538,114 @@ export default async function LatestInvoices() { // Remove props
 >> 4. Import a new skeleton component called <CardsSkeleton />.
 >> 5. Wrap ```<CardWrapper />``` in Suspense.
 >>
-```tsx
-/*'/app/dashboard/page.tsx'*/
-import CardWrapper from '@/app/ui/dashboard/cards';
-// ...
-import {
-  RevenueChartSkeleton,
-  LatestInvoicesSkeleton,
-  CardsSkeleton,
-} from '@/app/ui/skeletons';
- 
-export default async function Page() {
-  return (
-    <main>
-      <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
-        Dashboard
-      </h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-        <Suspense fallback={<CardsSkeleton />}>
-          <CardWrapper />
-        </Suspense>
-      </div>
-      // ...
-    </main>
-  );
-}
-```
+>> ```tsx
+>> /*'/app/dashboard/page.tsx'*/
+>> import CardWrapper from '@/app/ui/dashboard/cards';
+>> // ...
+>> import {
+>>   RevenueChartSkeleton,
+>>   LatestInvoicesSkeleton,
+>>   CardsSkeleton,
+>> } from '@/app/ui/skeletons';
+>>  
+>> export default async function Page() {
+>>   return (
+>>     <main>
+>>       <h1 className={`${lusitana.className} mb-4 text-xl md:text-2xl`}>
+>>         Dashboard
+>>       </h1>
+>>       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+>>         <Suspense fallback={<CardsSkeleton />}>
+>>           <CardWrapper />
+>>         </Suspense>
+>>       </div>
+>>       // ...
+>>     </main>
+>>   );
+>> }
+>> ```
 >>
 >>
-```
-/*'/app/ui/dashboard/cards.tsx'*/
-// ...
-import { fetchCardData } from '@/app/lib/data';
- 
-// ...
- 
-export default async function CardWrapper() {
-  const {
-    numberOfInvoices,
-    numberOfCustomers,
-    totalPaidInvoices,
-    totalPendingInvoices,
-  } = await fetchCardData();
- 
-  return (
-    <>
-      <Card title="Collected" value={totalPaidInvoices} type="collected" />
-      <Card title="Pending" value={totalPendingInvoices} type="pending" />
-      <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
-      <Card
-        title="Total Customers"
-        value={numberOfCustomers}
-        type="customers"
-      />
-    </>
-  );
-}
-```
+>> ```tsx
+>> /*'/app/ui/dashboard/cards.tsx'*/
+>> // ...
+>> import { fetchCardData } from '@/app/lib/data';
+>>  
+>> // ...
+>>  
+>> export default async function CardWrapper() {
+>>   const {
+>>     numberOfInvoices,
+>>     numberOfCustomers,
+>>     totalPaidInvoices,
+>>     totalPendingInvoices,
+>>   } = await fetchCardData();
+>>  
+>>   return (
+>>     <>
+>>       <Card title="Collected" value={totalPaidInvoices} type="collected" />
+>>       <Card title="Pending" value={totalPendingInvoices} type="pending" />
+>>       <Card title="Total Invoices" value={numberOfInvoices} type="invoices" />
+>>       <Card
+>>         title="Total Customers"
+>>         value={numberOfCustomers}
+>>         type="customers"
+>>       />
+>>     </>
+>>   );
+>> }
+>> ```
 >>
 >>
 ### 10. Partial Prerendering
 > #### Static vs. Dynamic Routes
->> For most web apps built today, you either choose between static and dynamic rendering for your entire application or for a specific route. And in Next.js, if you call a dynamic function in a route (like querying your database), the entire route becomes dynamic.
+>> For most web apps built today, you choose between static and dynamic rendering for your entire application or a specific route. And in Next.js, if you call a dynamic function in a route (like querying your database), the whole route becomes dynamic.
 >> 
->> However, most routes are not fully static or dynamic. For example, consider an e-commerce site. You might want to statically render the majority of the product information page, but you may want to fetch the user's cart and recommended products dynamically, this allows you show personalized content to your users.
+>> However, most routes are not fully static or dynamic. For example, consider an e-commerce site. You might want to render the majority of the product information page statically, but you may want to fetch the user's cart and recommended products dynamically, this allows you show personalized content to your users.
 >> 
 > #### What is Partial Prerendering
->> A new rendering model that allows you to combine the benefits of static and dynamic rendering in the same route.
+>> A new rendering model that combines the benefits of static and dynamic rendering in the same route.
 >> 
 >> When a user visits a route:
 >> + A static route shell that includes the navbar and product information is served, ensuring a fast initial load.
->> + The shell leaves holes where dynamic content like the cart and recommended products will load in asynchronously.
->> + The async holes are streamed in parallel, reducing the overall load time of the page.
+>> + The shell leaves holes where dynamic content like the cart and recommended products will load asynchronously.
+>> + The async holes are streamed in parallel, reducing the page's overall load time.
 >>
 > #### How does Partial Prerendering work?
 >> Partial Prerendering uses React's Suspense (which you learned about in the previous chapter) to defer rendering parts of your application until some condition is met (e.g. data is loaded).
 >> 
->> The Suspense fallback is embedded into the initial HTML file along with the static content. At build time (or during revalidation), the static content is prerendered to create a static shell. The rendering of dynamic content is postponed until the user requests the route.
+>> The Suspense fallback and static content are embedded into the initial HTML file. At build time (or during revalidation), the static content is prerendered to create a static shell. The rendering of dynamic content is postponed until the user requests the route.
 >> 
->> Wrapping a component in Suspense doesn't make the component itself dynamic, but rather Suspense is used as a boundary between your static and dynamic code.
+>> Wrapping a component in Suspense doesn't make the component itself dynamic, but rather, Suspense is used as a boundary between your static and dynamic code.
 >> 
 > #### Implementing Partial Prerendering
 >> Enable PPR for your Next.js app by adding the ppr option to your ```next.config.mjs``` file:
 >>
-```mjs
-/*next.config.mjs*/
-/** @type {import('next').NextConfig} */
- 
-const nextConfig = {
-  experimental: {
-    ppr: 'incremental',
-  },
-};
- 
-export default nextConfig;
-```
+>> ```mjs
+>> /*next.config.mjs*/
+>> /** @type {import('next').NextConfig} */
+>>  
+>> const nextConfig = {
+>>   experimental: {
+>>     ppr: 'incremental',
+>>   },
+>> };
+>>  
+>> export default nextConfig;
+>> ```
 >>
 >> The 'incremental' value allows you to adopt PPR for specific routes.
 >>
 >> Next, add the experimental_ppr segment config option to your dashboard layout:
 >>
-```tsx
-/*/app/dashboard/layout.tsx*/
-import SideNav from '@/app/ui/dashboard/sidenav';
- 
-export const experimental_ppr = true;
- 
-// ...
-```
+>> ```tsx
+>> /*/app/dashboard/layout.tsx*/
+>> import SideNav from '@/app/ui/dashboard/sidenav';
+>>  
+>> export const experimental_ppr = true;
+>>  
+>> // ...
+>> ```
 >>
 >>
 
@@ -735,7 +736,7 @@ export default function Search({ placeholder }: { placeholder: string }) {
 >>> ##### 2. Update the URL with the search params.
 >>>> Import the ```useSearchParams``` hook from ```'next/navigation'```, and assign it to a variable:
 >>>>
-```
+```tsx
 /*/app/ui/search.tsx*/
 'use client';
  
@@ -754,7 +755,7 @@ export default function Search() {
 >>>>
 >>>> Inside ```handleSearch```, create a new ```URLSearchParams``` instance using your new ```searchParams``` variable.
 >>>>
-```
+```tsx
 /*/app/ui/search.tsx*/
 'use client';
  
@@ -772,9 +773,10 @@ export default function Search() {
 ```
 >>>>
 >>>> ```URLSearchParams``` is a Web API that provides utility methods for manipulating the URL query parameters. Instead of creating a complex string literal, you can use it to get the params string like ```?page=1&query=a```.
+>>>>
 >>>> Next, ```set``` the params string based on the user’s input. If the input is empty, you want to ```delete``` it:
 >>>>
-```
+```tsx
 /*/app/ui/search.tsx*/
 'use client';
  
@@ -797,9 +799,10 @@ export default function Search() {
 ```
 >>>>
 >>>> You can use Next.js's ```useRouter``` and ```usePathname``` hooks to update the URL.
->>>>Import ```useRouter``` and ```usePathname``` from ```'next/navigation'```, and use the ```replace``` method from ```useRouter()``` inside ```handleSearch```:
 >>>>
-```
+>>>> Import ```useRouter``` and ```usePathname``` from ```'next/navigation'```, and use the ```replace``` method from ```useRouter()``` inside ```handleSearch```:
+>>>>
+```tsx
 /*/app/ui/search.tsx*/
 'use client';
  
@@ -828,10 +831,11 @@ export default function Search() {
 >>>> + As the user types into the search bar, ```params.toString()``` translates this input into a URL-friendly format.
 >>>> + ```replace(${pathname}?${params.toString()})``` updates the URL with the user's search data. For example, ```/dashboard/invoices?query=lee``` if the user searches for "Lee."
 >>>> + The URL is updated without reloading the page, thanks to Next.js's client-side navigation (which you learned about in the chapter on navigating between pages.
+>>>>
 >>> ##### 3. Keeping the URL and input in sync
 >>>> To ensure the input field is in sync with the URL and will be populated when sharing, you can pass a ```defaultValue``` to input by reading from ```searchParams```:
 >>>>
-```
+```tsx
 /*/app/ui/search.tsx*/
 <input
   className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
@@ -846,7 +850,7 @@ export default function Search() {
 >>> ##### 4. Updating the table
 >>>> Page components accept a prop called ```searchParams```, so you can pass the current URL params to the ```<Table>``` component.
 >>>>
-```
+```tsx
 /*/app/dashboard/invoices/page.tsx*/
 import Pagination from '@/app/ui/invoices/pagination';
 import Search from '@/app/ui/search';
@@ -889,7 +893,7 @@ export default async function Page({
 >>>>
 >>>> If you navigate to the ```<Table```> Component, you'll see that the two props, ```query``` and ```currentPage```, are passed to the ```fetchFilteredInvoices()``` function which returns the invoices that match the query.
 >>>>
-```
+```tsx
 /*/app/ui/invoices/table.tsx*/
 // ...
 export default async function InvoicesTable({

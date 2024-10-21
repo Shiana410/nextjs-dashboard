@@ -1,4 +1,4 @@
-# Learn Next.js
+![image](https://github.com/user-attachments/assets/0078c3c4-1fdf-4ca8-b767-74f5a28997e4)![image](https://github.com/user-attachments/assets/bd12dd3a-b665-4004-8bb4-c94b9eedfb69)![image](https://github.com/user-attachments/assets/9580ffc9-11a2-4b4e-9b00-ba87385acd61)![image](https://github.com/user-attachments/assets/b26f0679-5cd3-48f1-942d-ef5f1ed51df9)# Learn Next.js
 ### 1. Getting Started
 > #### Creating a new project
 >> pnpm is recommended as the package manager as it is faster and more efficient than npm or yarn. Install it by running the following in the terminal:
@@ -912,7 +912,7 @@ There are a few cases where you have to write database queries:
 > #### Debouncing
 >> Inside your ```handleSearch``` function, add the following ```console.log```:
 >>
->> ```
+>> ```tsx
 >> /*/app/ui/search.tsx*/
 >> function handleSearch(term: string) {
 >>   console.log(`Searching... ${term}`);
@@ -937,7 +937,7 @@ There are a few cases where you have to write database queries:
 >> 
 >> In your ```<Search>``` Component, import a function called ```useDebouncedCallback```:
 >>
->> ```
+>> ```tsx
 >> /*/app/ui/search.tsx*/
 >> // ...
 >> import { useDebouncedCallback } from 'use-debounce';
@@ -967,7 +967,7 @@ There are a few cases where you have to write database queries:
 >> 
 >> In ```/dashboard/invoices/page.tsx```, import a new function called ```fetchInvoicesPages``` and pass the ```query``` from ```searchParams``` as an argument:
 >>
->> ```
+>> ```tsx
 >> /*/app/dashboard/invoices/page.tsx*/
 >> // ...
 >> import { fetchInvoicesPages } from '@/app/lib/data';
@@ -995,7 +995,7 @@ There are a few cases where you have to write database queries:
 >>
 >> Next, pass the ```totalPages``` prop to the ```<Pagination/>``` component:
 >>
->> ```
+>> ```tsx
 >> /*/app/dashboard/invoices/page.tsx*/
 >> // ...
 >>  
@@ -1088,35 +1088,36 @@ There are a few cases where you have to write database queries:
 >>
 >> Finally, when the user types a new search query, you want to reset the page number to 1. You can do this by updating the ```handleSearch``` function in your ```<Search>``` component:
 >>
-```
-/*/app/ui/search.tsx*/
-'use client';
- 
-import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useDebouncedCallback } from 'use-debounce';
- 
-export default function Search({ placeholder }: { placeholder: string }) {
-  const searchParams = useSearchParams();
-  const { replace } = useRouter();
-  const pathname = usePathname();
- 
-  const handleSearch = useDebouncedCallback((term) => {
-    const params = new URLSearchParams(searchParams);
-    params.set('page', '1');
-    if (term) {
-      params.set('query', term);
-    } else {
-      params.delete('query');
-    }
-    replace(`${pathname}?${params.toString()}`);
-  }, 300);
- 
-```
+>> ```tsx
+>> /*/app/ui/search.tsx*/
+>> 'use client';
+>>  
+>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>> import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+>> import { useDebouncedCallback } from 'use-debounce';
+>>  
+>> export default function Search({ placeholder }: { placeholder: string }) {
+>>   const searchParams = useSearchParams();
+>>   const { replace } = useRouter();
+>>   const pathname = usePathname();
+>>  
+>>   const handleSearch = useDebouncedCallback((term) => {
+>>     const params = new URLSearchParams(searchParams);
+>>     params.set('page', '1');
+>>     if (term) {
+>>       params.set('query', term);
+>>     } else {
+>>       params.delete('query');
+>>     }
+>>     replace(`${pathname}?${params.toString()}`);
+>>   }, 300);
+>>  
+>> ```
 >>
 ### 12. Mutating Data
 > #### What are Server Actions?
 >> React Server Actions allow you to run asynchronous code directly on the server. They eliminate the need to create API endpoints to mutate your data. Instead, you write asynchronous functions that execute on the server and can be invoked from your Client or Server Components.
+>> 
 > #### Creating an invoice
 >> Here are the steps you'll take to create a new invoice:
 >> 1. Create a form to capture the user's input.
@@ -1124,444 +1125,445 @@ export default function Search({ placeholder }: { placeholder: string }) {
 >> 3. Inside your Server Action, extract the data from the formData object.
 >> 4. Validate and prepare the data to be inserted into your database.
 >> 5. Insert the data and handle any errors.
->> 6. Revalidate the cache and redirect the user back to invoices page.
+>> 6. Revalidate the cache and redirect the user back to the invoices page.
+>> 7. 
 >> ##### 1. Create a new route and form
 >>>
-```
-/*/dashboard/invoices/create/page.tsx*/
-import Form from '@/app/ui/invoices/create-form';
-import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchCustomers } from '@/app/lib/data';
- 
-export default async function Page() {
-  const customers = await fetchCustomers();
- 
-  return (
-    <main>
-      <Breadcrumbs
-        breadcrumbs={[
-          { label: 'Invoices', href: '/dashboard/invoices' },
-          {
-            label: 'Create Invoice',
-            href: '/dashboard/invoices/create',
-            active: true,
-          },
-        ]}
-      />
-      <Form customers={customers} />
-    </main>
-  );
-}
-```
+>>> ```tsx
+>>> /*/dashboard/invoices/create/page.tsx*/
+>>> import Form from '@/app/ui/invoices/create-form';
+>>> import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+>>> import { fetchCustomers } from '@/app/lib/data';
+>>>  
+>>> export default async function Page() {
+>>>   const customers = await fetchCustomers();
+>>>  
+>>>   return (
+>>>     <main>
+>>>       <Breadcrumbs
+>>>         breadcrumbs={[
+>>>           { label: 'Invoices', href: '/dashboard/invoices' },
+>>>           {
+>>>             label: 'Create Invoice',
+>>>             href: '/dashboard/invoices/create',
+>>>             active: true,
+>>>           },
+>>>         ]}
+>>>       />
+>>>       <Form customers={customers} />
+>>>     </main>
+>>>   );
+>>> }
+>>> ```
 >> ##### 2. Create a server action
 >>> In your ```actions.ts``` file, create a new async function that accepts ```formData```:
 >>>
-```
-/*/app/lib/action.ts*/
-'use server';
- 
-export async function createInvoice(formData: FormData) {}
-```
+>>> ```ts
+>>> /*/app/lib/action.ts*/
+>>> 'use server';
+>>>  
+>>> export async function createInvoice(formData: FormData) {}
+>>> ```
 >>>
->>> By adding the 'use server,' you mark all the exported functions within the file as Server Actions. These server functions can then be imported and used in Client and Server components.
+>>> By adding the 'use server,' you mark all the exported functions within the file as Server Actions. These server functions can be imported and used in Client and Server components.
 >>>
 >>> Then, in your ```<Form>``` component, import the createInvoice from ```your actions.ts``` file. Add a ```action``` attribute to the ```<form>``` element, and call the createInvoice action.
 >>>
-```
-/app/ui/invoices/create-form.tsx*/
-import { customerField } from '@/app/lib/definitions';
-import Link from 'next/link';
-import {
-  CheckIcon,
-  ClockIcon,
-  CurrencyDollarIcon,
-  UserCircleIcon,
-} from '@heroicons/react/24/outline';
-import { Button } from '@/app/ui/button';
-import { createInvoice } from '@/app/lib/actions';
- 
-export default function Form({
-  customers,
-}: {
-  customers: customerField[];
+>>> ```tsx
+>>> /app/ui/invoices/create-form.tsx*/
+>>> import { customerField } from '@/app/lib/definitions';
+>>> import Link from 'next/link';
+>>> import {
+>>>   CheckIcon,
+>>>   ClockIcon,
+>>>   CurrencyDollarIcon,
+>>>   UserCircleIcon,
+>>> } from '@heroicons/react/24/outline';
+>>> import { Button } from '@/app/ui/button';
+>>> import { createInvoice } from '@/app/lib/actions';
+>>>  
+>>> export default function Form({
+>>>   customers,
+>>> }: {
+>>>   customers: customerField[];
 }) {
-  return (
-    <form action={createInvoice}>
-      // ...
-  )
-}
-```
+>>>   return (
+>>>     <form action={createInvoice}>
+>>>       // ...
+>>>   )
+>>> }
+>>> ```
 >>>
 >> ##### 3. Extract the data from ```formData```
 >>> Back in your ```actions.ts``` file, you'll need to extract the values of ```formData```, there are a couple of methods you can use.
 >>>
-```
-/*/app/lib/actions.ts*/
-'use server';
- 
-export async function createInvoice(formData: FormData) {
-  const rawFormData = {
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  };
-  // Test it out:
-  console.log(rawFormData);
-}
-```
+>>> ```ts
+>>> /*/app/lib/actions.ts*/
+>>> 'use server';
+>>>  
+>>> export async function createInvoice(formData: FormData) {
+>>>   const rawFormData = {
+>>>     customerId: formData.get('customerId'),
+>>>     amount: formData.get('amount'),
+>>>     status: formData.get('status'),
+>>>   };
+>>>   // Test it out:
+>>>   console.log(rawFormData);
+>>> }
+>>> ```
 >>>
 >> ##### 4. Validate and prepare the data
 >>> ###### Type validation and coercion
 >>> It's important to validate that the data from your form aligns with the expected types in your database. For instance, if you add a ```console.log``` inside your action:
 >>>
-```console.log(typeof rawFormData.amount);```
+>>> ```console.log(typeof rawFormData.amount);```
 >>>
->>> You'll notice that amount is of type string and not number. This is because input elements with ```type="number"``` actually return a string
+>>> You'll notice that the amount is of type string, not number. This is because input elements with ```type="number"``` actually return a string
 >>>
 >>> In your ```actions.ts``` file, import Zod and define a schema that matches the shape of your form object. This schema will validate the ```formData``` before saving it to a database.
 >>>
-```
-/*/app/lib/actions.ts*/
-'use server';
- 
-import { z } from 'zod';
- 
-const FormSchema = z.object({
-  id: z.string(),
-  customerId: z.string(),
-  amount: z.coerce.number(),
-  status: z.enum(['pending', 'paid']),
-  date: z.string(),
-});
- 
-const CreateInvoice = FormSchema.omit({ id: true, date: true });
- 
-export async function createInvoice(formData: FormData) {
-  // ...
-}
-```
+>>> ```ts
+>>> /*/app/lib/actions.ts*/
+>>> 'use server';
+>>>  
+>>> import { z } from 'zod';
+>>>  
+>>> const FormSchema = z.object({
+>>>   id: z.string(),
+>>>   customerId: z.string(),
+>>>   amount: z.coerce.number(),
+>>>   status: z.enum(['pending', 'paid']),
+>>>   date: z.string(),
+>>> });
+>>>  
+>>> const CreateInvoice = FormSchema.omit({ id: true, date: true });
+>>>  
+>>> export async function createInvoice(formData: FormData) {
+>>>   // ...
+>>> }
+>>> ```
 >>>
 >>> You can then pass your ```rawFormData``` to ```CreateInvoice``` to validate the types:
 >>>
-```
-/*/app/lib/actions.ts*/
-// ...
-export async function createInvoice(formData: FormData) {
-  const { customerId, amount, status } = CreateInvoice.parse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-}
-```
+>>> ```ts
+>>> /*/app/lib/actions.ts*/
+>>> // ...
+>>> export async function createInvoice(formData: FormData) {
+>>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>>     customerId: formData.get('customerId'),
+>>>     amount: formData.get('amount'),
+>>>     status: formData.get('status'),
+>>>   });
+>>> }
+>>> ```
 >>>
 >>> ###### Storing values in cents
 >>>
-```
-/*/app/lib/actions.ts*/
-// ...
-export async function createInvoice(formData: FormData) {
-  const { customerId, amount, status } = CreateInvoice.parse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-  const amountInCents = amount * 100;
-}
-```
+>>> ```ts
+>>> /*/app/lib/actions.ts*/
+>>> // ...
+>>> export async function createInvoice(formData: FormData) {
+>>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>>     customerId: formData.get('customerId'),
+>>>     amount: formData.get('amount'),
+>>>     status: formData.get('status'),
+>>>   });
+>>>   const amountInCents = amount * 100;
+>>> }
+>>> ```
 >>>
 >>> ###### Creating new dates
 >>>
-```
-/*/app/lib/actions.ts*/
-// ...
-export async function createInvoice(formData: FormData) {
-  const { customerId, amount, status } = CreateInvoice.parse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-  const amountInCents = amount * 100;
-  const date = new Date().toISOString().split('T')[0];
-}
-```
+>>> ```ts
+>>> /*/app/lib/actions.ts*/
+>>> // ...
+>>> export async function createInvoice(formData: FormData) {
+>>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>>     customerId: formData.get('customerId'),
+>>>     amount: formData.get('amount'),
+>>>     status: formData.get('status'),
+>>>   });
+>>>   const amountInCents = amount * 100;
+>>>   const date = new Date().toISOString().split('T')[0];
+>>> }
+>>> ```
 >>>
 >> ##### 5. Inserting the data into your database
 >> Now that you have all the values you need for your database, you can create an SQL query to insert the new invoice into your database and pass in the variables:
 >>
-```
-/*/app/lib/actions.ts*/
-import { z } from 'zod';
-import { sql } from '@vercel/postgres';
- 
-// ...
- 
-export async function createInvoice(formData: FormData) {
-  const { customerId, amount, status } = CreateInvoice.parse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-  const amountInCents = amount * 100;
-  const date = new Date().toISOString().split('T')[0];
- 
-  await sql`
-    INSERT INTO invoices (customer_id, amount, status, date)
-    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-  `;
-}
-```
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> import { z } from 'zod';
+>> import { sql } from '@vercel/postgres';
+>>  
+>> // ...
+>>  
+>> export async function createInvoice(formData: FormData) {
+>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>     customerId: formData.get('customerId'),
+>>     amount: formData.get('amount'),
+>>     status: formData.get('status'),
+>>   });
+>>   const amountInCents = amount * 100;
+>>   const date = new Date().toISOString().split('T')[0];
+>>  
+>>   await sql`
+>>     INSERT INTO invoices (customer_id, amount, status, date)
+>>     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+>>   `;
+>> }
+>> ```
 >>
 >> ##### 6. Revalidate and redirect
 >> Next.js has a Client-side Router Cache that stores the route segments in the user's browser for a time. Along with prefetching, this cache ensures that users can quickly navigate between routes while reducing the number of requests made to the server.
 >>
 >> Since you're updating the data displayed in the invoices route, you want to clear this cache and trigger a new request to the server. You can do this with the revalidatePath function from Next.js:
 >>
-```
-/*/app/lib/actions.ts*/
-'use server';
- 
-import { z } from 'zod';
-import { sql } from '@vercel/postgres';
-import { revalidatePath } from 'next/cache';
- 
-// ...
- 
-export async function createInvoice(formData: FormData) {
-  const { customerId, amount, status } = CreateInvoice.parse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
-  const amountInCents = amount * 100;
-  const date = new Date().toISOString().split('T')[0];
- 
-  await sql`
-    INSERT INTO invoices (customer_id, amount, status, date)
-    VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
-  `;
- 
-  revalidatePath('/dashboard/invoices');
-}
-```
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> 'use server';
+>>  
+>> import { z } from 'zod';
+>> import { sql } from '@vercel/postgres';
+>> import { revalidatePath } from 'next/cache';
+>>  
+>> // ...
+>>  
+>> export async function createInvoice(formData: FormData) {
+>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>     customerId: formData.get('customerId'),
+>>     amount: formData.get('amount'),
+>>     status: formData.get('status'),
+>>   });
+>>   const amountInCents = amount * 100;
+>>   const date = new Date().toISOString().split('T')[0];
+>>  
+>>   await sql`
+>>     INSERT INTO invoices (customer_id, amount, status, date)
+>>     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+>>   `;
+>>  
+>>   revalidatePath('/dashboard/invoices');
+>> }
+>> ```
 >>
->> At this point, you also want to redirect the user back to the ```/dashboard/invoices``` page. You can do this with the ```redirect``` function from Next.js:
+>> At this point, you also want to redirect the user to the ```/dashboard/invoices``` page. You can do this with the ```redirect``` function from Next.js:
 >>
-```
-/*/app/lib/actions.ts*/
-'use server';
- 
-import { z } from 'zod';
-import { sql } from '@vercel/postgres';
-import { revalidatePath } from 'next/cache';
-import { redirect } from 'next/navigation';
- 
-// ...
- 
-export async function createInvoice(formData: FormData) {
-  // ...
- 
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
-}
-```
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> 'use server';
+>>  
+>> import { z } from 'zod';
+>> import { sql } from '@vercel/postgres';
+>> import { revalidatePath } from 'next/cache';
+>> import { redirect } from 'next/navigation';
+>>  
+>> // ...
+>>  
+>> export async function createInvoice(formData: FormData) {
+>>   // ...
+>>  
+>>   revalidatePath('/dashboard/invoices');
+>>   redirect('/dashboard/invoices');
+>> }
+>> ```
 >>
 > #### Updating an invoice
 >> These are the steps you'll take to update an invoice:
 >> ##### 1. Create a new dynamic route segment with the invoice id
 >> In your <Table> component, notice there's a <UpdateInvoice /> button that receives the invoice's id from the table records.
 >>
-```
-/*/app/ui/invoices/table.tsx*/
-export default async function InvoicesTable({
-  query,
-  currentPage,
-}: {
-  query: string;
-  currentPage: number;
-}) {
-  return (
-    // ...
-    <td className="flex justify-end gap-2 whitespace-nowrap px-6 py-4 text-sm">
-      <UpdateInvoice id={invoice.id} />
-      <DeleteInvoice id={invoice.id} />
-    </td>
-    // ...
-  );
-}
-```
+>> ```tsx
+>> /*/app/ui/invoices/table.tsx*/
+>> export default async function InvoicesTable({
+>>   query,
+>>   currentPage,
+>> }: {
+>>   query: string;
+>>   currentPage: number;
+>> }) {
+>>   return (
+>>     // ...
+>>     <td className="flex justify-end gap-2 whitespace-nowrap px-6 py-4 text-sm">
+>>       <UpdateInvoice id={invoice.id} />
+>>       <DeleteInvoice id={invoice.id} />
+>>     </td>
+>>     // ...
+>>   );
+>> }
+>> ```
 >>
->> Navigate to your <UpdateInvoice /> component, and update the href of the Link to accept the id prop. You can use template literals to link to a dynamic route segment:
+>> Navigate to your <UpdateInvoice /> component, and update the link's href to accept the id prop. You can use template literals to link to a dynamic route segment:
 >>
-```
-/*/app/ui/invoices/buttons.tsx*/
-import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
-import Link from 'next/link';
- 
-// ...
- 
-export function UpdateInvoice({ id }: { id: string }) {
-  return (
-    <Link
-      href={`/dashboard/invoices/${id}/edit`}
-      className="rounded-md border p-2 hover:bg-gray-100"
-    >
-      <PencilIcon className="w-5" />
-    </Link>
-  );
-}
-```
+>> ```tsx
+>> /*/app/ui/invoices/buttons.tsx*/
+>> import { PencilIcon, PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
+>> import Link from 'next/link';
+>>  
+>> // ...
+>>  
+>> export function UpdateInvoice({ id }: { id: string }) {
+>>   return (
+>>     <Link
+>>       href={`/dashboard/invoices/${id}/edit`}
+>>       className="rounded-md border p-2 hover:bg-gray-100"
+>>     >
+>>       <PencilIcon className="w-5" />
+>>     </Link>
+>>   );
+>> }
+>> ```
 >>
->> ##### 2. Read the invoice id from the page params
+>> ##### 2. Read the invoice ID from the page params
 >>
-```
-/*/app/dashboard/invoices/[id]/edit/page.tsx*/
-import Form from '@/app/ui/invoices/edit-form';
-import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchCustomers } from '@/app/lib/data';
- 
-export default async function Page() {
-  return (
-    <main>
-      <Breadcrumbs
-        breadcrumbs={[
-          { label: 'Invoices', href: '/dashboard/invoices' },
-          {
-            label: 'Edit Invoice',
-            href: `/dashboard/invoices/${id}/edit`,
-            active: true,
-          },
-        ]}
-      />
-      <Form invoice={invoice} customers={customers} />
-    </main>
-  );
-}
-```
+>> ```tsx
+>> /*/app/dashboard/invoices/[id]/edit/page.tsx*/
+>> import Form from '@/app/ui/invoices/edit-form';
+>> import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+>> import { fetchCustomers } from '@/app/lib/data';
+>>  
+>> export default async function Page() {
+>>   return (
+>>     <main>
+>>       <Breadcrumbs
+>>         breadcrumbs={[
+>>           { label: 'Invoices', href: '/dashboard/invoices' },
+>>           {
+>>             label: 'Edit Invoice',
+>>             href: `/dashboard/invoices/${id}/edit`,
+>>             active: true,
+>>           },
+>>         ]}
+>>       />
+>>       <Form invoice={invoice} customers={customers} />
+>>     </main>
+>>   );
+>> }
+>> ```
 >>
-> >Notice how it's similar to your ```/create``` invoice page, except it imports a different form (from the edit-form.tsx file). This form should be pre-populated with a ```defaultValue``` for the customer's name, invoice amount, and status. To pre-populate the form fields, you need to fetch the specific invoice using ```id```.
+>> Notice how it's similar to your ```/create``` invoice page, except it imports a different form (from the edit-form.tsx file). This form should be pre-populated with a ```defaultValue``` for the customer's name, invoice amount, and status. To pre-populate the form fields, fetch the specific invoice using ```id```.
 >>
 >> In addition to ```searchParams```, page components also accept a prop called ```params``` which you can use to access the ```id```. Update your ```<Page>``` component to receive the prop:
 >>
-```
-/*/app/dashboard/invoices/[id]/edit/page.tsx*/
-import Form from '@/app/ui/invoices/edit-form';
-import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchCustomers } from '@/app/lib/data';
- 
-export default async function Page({ params }: { params: { id: string } }) {
-  const id = params.id;
-  // ...
-}
-```
+>> ```tsx
+>> /*/app/dashboard/invoices/[id]/edit/page.tsx*/
+>> import Form from '@/app/ui/invoices/edit-form';
+>> import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+>> import { fetchCustomers } from '@/app/lib/data';
+>>  
+>> export default async function Page({ params }: { params: { id: string } }) {
+>>   const id = params.id;
+>>   // ...
+>> }
+>> ```
 >>
 >> ##### 3. Fetch the specific invoice from your database
->> + Import a new function called fetchInvoiceById and pass the id as an argument.
+>> + Import a new fetchInvoiceById function and pass the id as an argument.
 >> + Import fetchCustomers to fetch the customer names for the dropdown.
 >>
 >> You can use ```Promise.all``` to fetch both the invoice and customers in parallel:
 >>
-```
-/*/dahsboard/invoices/[id]/edit/page.tsx*/
-import Form from '@/app/ui/invoices/edit-form';
-import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
-import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
- 
-export default async function Page({ params }: { params: { id: string } }) {
-  const id = params.id;
-  const [invoice, customers] = await Promise.all([
-    fetchInvoiceById(id),
-    fetchCustomers(),
-  ]);
-  // ...
-}
-```
+>> ```tsx
+>> /*/dahsboard/invoices/[id]/edit/page.tsx*/
+>> import Form from '@/app/ui/invoices/edit-form';
+>> import Breadcrumbs from '@/app/ui/invoices/breadcrumbs';
+>> import { fetchInvoiceById, fetchCustomers } from '@/app/lib/data';
+>>  
+>> export default async function Page({ params }: { params: { id: string } }) {
+>>   const id = params.id;
+>>   const [invoice, customers] = await Promise.all([
+>>     fetchInvoiceById(id),
+>>     fetchCustomers(),
+>>   ]);
+>>   // ...
+>> }
+>> ```
 >>
 >> ##### 4. Pass the ```id``` to the Server Action
 >> You can pass ```id``` to the Server Action using JS ```bind```. This will ensure that any values passed to the Server Action are encoded.
 >>
-```
-/*/app/ui/invoices/edit-form.tsx*/
-// ...
-import { updateInvoice } from '@/app/lib/actions';
- 
-export default function EditInvoiceForm({
-  invoice,
-  customers,
-}: {
-  invoice: InvoiceForm;
-  customers: CustomerField[];
-}) {
-  const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
- 
-  return (
-    <form action={updateInvoiceWithId}>
-      <input type="hidden" name="id" value={invoice.id} />
-    </form>
-  );
-}
-```
+>> ```tsx
+>> /*/app/ui/invoices/edit-form.tsx*/
+>> // ...
+>> import { updateInvoice } from '@/app/lib/actions';
+>>  
+>> export default function EditInvoiceForm({
+>>   invoice,
+>>   customers,
+>> }: {
+>>   invoice: InvoiceForm;
+>>   customers: CustomerField[];
+>> }) {
+>>   const updateInvoiceWithId = updateInvoice.bind(null, invoice.id);
+>>  
+>>   return (
+>>     <form action={updateInvoiceWithId}>
+>>       <input type="hidden" name="id" value={invoice.id} />
+>>     </form>
+>>   );
+>> }
+>> ```
 >>
 >> Then, in your ```actions.ts``` file, create a new action, ```updateInvoice```:
 >>
-```
-/*/app/lib/actions.ts*/
-// Use Zod to update the expected types
-const UpdateInvoice = FormSchema.omit({ id: true, date: true });
- 
-// ...
- 
-export async function updateInvoice(id: string, formData: FormData) {
-  const { customerId, amount, status } = UpdateInvoice.parse({
-    customerId: formData.get('customerId'),
-    amount: formData.get('amount'),
-    status: formData.get('status'),
-  });
- 
-  const amountInCents = amount * 100;
- 
-  await sql`
-    UPDATE invoices
-    SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-    WHERE id = ${id}
-  `;
- 
-  revalidatePath('/dashboard/invoices');
-  redirect('/dashboard/invoices');
-}
-```
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> // Use Zod to update the expected types
+>> const UpdateInvoice = FormSchema.omit({ id: true, date: true });
+>>  
+>> // ...
+>>  
+>> export async function updateInvoice(id: string, formData: FormData) {
+>>   const { customerId, amount, status } = UpdateInvoice.parse({
+>>     customerId: formData.get('customerId'),
+>>     amount: formData.get('amount'),
+>>     status: formData.get('status'),
+>>   });
+>>  
+>>   const amountInCents = amount * 100;
+>>  
+>>   await sql`
+>>     UPDATE invoices
+>>     SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+>>     WHERE id = ${id}
+>>   `;
+>>  
+>>   revalidatePath('/dashboard/invoices');
+>>   redirect('/dashboard/invoices');
+>> }
+>> ```
 >>
 > #### Deleting an invoice
 >> To delete an invoice using a Server Action, wrap the delete button in a ```<form>``` element and pass the ```id``` to the Server Action using ```bind```:
 >>
-```
-/*/app/ui/invoices/buttons.tsx*/
-import { deleteInvoice } from '@/app/lib/actions';
- 
-// ...
- 
-export function DeleteInvoice({ id }: { id: string }) {
-  const deleteInvoiceWithId = deleteInvoice.bind(null, id);
- 
-  return (
-    <form action={deleteInvoiceWithId}>
-      <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
-        <span className="sr-only">Delete</span>
-        <TrashIcon className="w-4" />
-      </button>
-    </form>
-  );
-}
-```
+>> ```tsx
+>> /*/app/ui/invoices/buttons.tsx*/
+>> import { deleteInvoice } from '@/app/lib/actions';
+>>  
+>> // ...
+>>  
+>> export function DeleteInvoice({ id }: { id: string }) {
+>>   const deleteInvoiceWithId = deleteInvoice.bind(null, id);
+>>  
+>>   return (
+>>     <form action={deleteInvoiceWithId}>
+>>       <button type="submit" className="rounded-md border p-2 hover:bg-gray-100">
+>>         <span className="sr-only">Delete</span>
+>>         <TrashIcon className="w-4" />
+>>       </button>
+>>     </form>
+>>   );
+>> }
+>> ```
 >>
 >> Inside your ```actions.ts``` file, create a new action called ```deleteInvoice```.
 >>
-```
-export async function deleteInvoice(id: string) {
-  await sql`DELETE FROM invoices WHERE id = ${id}`;
-  revalidatePath('/dashboard/invoices');
-}
-```
+>> ```ts
+>> export async function deleteInvoice(id: string) {
+>>   await sql`DELETE FROM invoices WHERE id = ${id}`;
+>>   revalidatePath('/dashboard/invoices');
+>> }
+>> ```
 >>
 ### 13. Handling Errors
 

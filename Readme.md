@@ -1,4 +1,4 @@
-# Learn Next.js
+![image](https://github.com/user-attachments/assets/6ea60130-8af3-4d0b-9da9-a7dd6850099e)# Learn Next.js
 ### 1. Getting Started
 > #### Creating a new project
 >> pnpm is recommended as the package manager as it is faster and more efficient than npm or yarn. Install it by running the following in the terminal:
@@ -1186,7 +1186,7 @@ There are a few cases where you have to write database queries:
 >>>   customers,
 >>> }: {
 >>>   customers: customerField[];
-}) {
+>>> }) {
 >>>   return (
 >>>     <form action={createInvoice}>
 >>>       // ...
@@ -1532,7 +1532,7 @@ There are a few cases where you have to write database queries:
 >>   redirect('/dashboard/invoices');
 >> }
 >> ```
->>
+
 > #### Deleting an invoice
 >> To delete an invoice using a Server Action, wrap the delete button in a ```<form>``` element and pass the ```id``` to the Server Action using ```bind```:
 >>
@@ -1564,8 +1564,115 @@ There are a few cases where you have to write database queries:
 >>   revalidatePath('/dashboard/invoices');
 >> }
 >> ```
->>
+
 ### 13. Handling Errors
+> #### Adding ```try/catch``` to Server Actions
+>> JavaScript's ```try/catch``` allows you to handle errors gracefully.
+>>
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> export async function createInvoice(formData: FormData) {
+>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>     customerId: formData.get('customerId'),
+>>     amount: formData.get('amount'),
+>>     status: formData.get('status'),
+>>   });
+>>  
+>>   const amountInCents = amount * 100;
+>>   const date = new Date().toISOString().split('T')[0];
+>>  
+>>   try {
+>>     await sql`
+>>       INSERT INTO invoices (customer_id, amount, status, date)
+>>       VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+>>     `;
+>>   } catch (error) {
+>>     return {
+>>       message: 'Database Error: Failed to Create Invoice.',
+>>     };
+>>   }
+>>  
+>>   revalidatePath('/dashboard/invoices');
+>>   redirect('/dashboard/invoices');
+>> }
+>> export async function updateInvoice(id: string, formData: FormData) {
+>>   const { customerId, amount, status } = UpdateInvoice.parse({
+>>     customerId: formData.get('customerId'),
+>>     amount: formData.get('amount'),
+>>     status: formData.get('status'),
+>>   });
+>>  
+>>   const amountInCents = amount * 100;
+>>  
+>>   try {
+>>     await sql`
+>>         UPDATE invoices
+>>         SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+>>         WHERE id = ${id}
+>>       `;
+>>   } catch (error) {
+>>     return { message: 'Database Error: Failed to Update Invoice.' };
+>>   }
+>>  
+>>   revalidatePath('/dashboard/invoices');
+>>   redirect('/dashboard/invoices');
+>> }
+>> export async function deleteInvoice(id: string) {
+>>   try {
+>>     await sql`DELETE FROM invoices WHERE id = ${id}`;
+>>     revalidatePath('/dashboard/invoices');
+>>     return { message: 'Deleted Invoice.' };
+>>   } catch (error) {
+>>     return { message: 'Database Error: Failed to Delete Invoice.' };
+>>   }
+>> }
+>> ```
+>>
+>> Redirect is being called outside of the try/catch block because redirect works by throwing an error, which the catch block would catch. To avoid this, you can call redirect after try/catch. Redirect would only be reachable if try is successful.
+>>
+> #### Handling all errors with ```error.tsx```
+>> The ```error.tsx``` file can be used to define a UI boundary for a route segment. It serves as a catch-all for unexpected errors and allows you to display a fallback UI to your users.
+>>
+>> ```tsx
+>> /*/dashboard/invoices/error.tsx
+>> 'use client';
+>>  
+>> import { useEffect } from 'react';
+>>  
+>> export default function Error({
+>>   error,
+>>   reset,
+>> }: {
+>>   error: Error & { digest?: string };
+>>   reset: () => void;
+>> }) {
+>>   useEffect(() => {
+>>     // Optionally log the error to an error reporting service
+>>     console.error(error);
+>>   }, [error]);
+>>  
+>>   return (
+>>     <main className="flex h-full flex-col items-center justify-center">
+>>       <h2 className="text-center">Something went wrong!</h2>
+>>       <button
+>>         className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-400"
+>>         onClick={
+>>           // Attempt to recover by trying to re-render the invoices route
+>>           () => reset()
+>>         }
+>>       >
+>>         Try again
+>>       </button>
+>>     </main>
+>>   );
+>> }
+>> ```
+>>
+>> Code explanation:
+>> + "use client" - ```error.tsx``` needs to be a Client Component.
+>> + It accepts two props:
+>>   + error: This object is an instance of JavaScript's native Error object.
+>>   + reset: This is a function to reset the error boundary. When executed, the function will try to re-render the route segment.
 
 ### 14. Improving Accessibility
 

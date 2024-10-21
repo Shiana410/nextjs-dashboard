@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/6ea60130-8af3-4d0b-9da9-a7dd6850099e)# Learn Next.js
+# Learn Next.js
 ### 1. Getting Started
 > #### Creating a new project
 >> pnpm is recommended as the package manager as it is faster and more efficient than npm or yarn. Install it by running the following in the terminal:

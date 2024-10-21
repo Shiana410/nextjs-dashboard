@@ -1292,85 +1292,87 @@ There are a few cases where you have to write database queries:
 >> ```
 >>
 > ##### 5. Inserting the data into your database
-> Now that you have all the values you need for your database, you can create an SQL query to insert the new invoice into your database and pass in the variables:
->
-> ```ts
-> /*/app/lib/actions.ts*/
-> import { z } from 'zod';
-> import { sql } from '@vercel/postgres';
->  
-> // ...
->  
-> export async function createInvoice(formData: FormData) {
->   const { customerId, amount, status } = CreateInvoice.parse({
->     customerId: formData.get('customerId'),
->     amount: formData.get('amount'),
->     status: formData.get('status'),
->   });
->   const amountInCents = amount * 100;
->   const date = new Date().toISOString().split('T')[0];
->  
->   await sql`
->     INSERT INTO invoices (customer_id, amount, status, date)
->     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
->   `;
-> }
-> ```
->
+>> Now that you have all the values you need for your database, you can create an SQL query to insert the new invoice into your database and pass in the variables:
+>>
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> import { z } from 'zod';
+>> import { sql } from '@vercel/postgres';
+>>  
+>> // ...
+>>  
+>> export async function createInvoice(formData: FormData) {
+>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>     customerId: formData.get('customerId'),
+>>     amount: formData.get('amount'),
+>>     status: formData.get('status'),
+>>   });
+>>   const amountInCents = amount * 100;
+>>   const date = new Date().toISOString().split('T')[0];
+>>  
+>>   await sql`
+>>     INSERT INTO invoices (customer_id, amount, status, date)
+>>     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+>>   `;
+>> }
+>> ```
+>>
 > ##### 6. Revalidate and redirect
-> Next.js has a Client-side Router Cache that stores the route segments in the user's browser for a time. Along with prefetching, this cache ensures that users can quickly navigate between routes while reducing the number of requests made to the server.
->
-> Since you're updating the data displayed in the invoices route, you want to clear this cache and trigger a new request to the server. You can do this with the revalidatePath function from Next.js:
->
-> ```ts
-> /*/app/lib/actions.ts*/
-> 'use server';
->  
-> import { z } from 'zod';
-> import { sql } from '@vercel/postgres';
-> import { revalidatePath } from 'next/cache';
->  
-> // ...
->  
-> export async function createInvoice(formData: FormData) {
->   const { customerId, amount, status } = CreateInvoice.parse({
->     customerId: formData.get('customerId'),
->     amount: formData.get('amount'),
->     status: formData.get('status'),
->   });
->   const amountInCents = amount * 100;
->   const date = new Date().toISOString().split('T')[0];
->  
->   await sql`
->     INSERT INTO invoices (customer_id, amount, status, date)
->     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
->   `;
->  
->   revalidatePath('/dashboard/invoices');
-> }
-> ```
->
-> At this point, you also want to redirect the user to the ```/dashboard/invoices``` page. You can do this with the ```redirect``` function from Next.js:
->
-> ```ts
-> /*/app/lib/actions.ts*/
-> 'use server';
->  
-> import { z } from 'zod';
-> import { sql } from '@vercel/postgres';
-> import { revalidatePath } from 'next/cache';
-> import { redirect } from 'next/navigation';
->  
-> // ...
->  
-> export async function createInvoice(formData: FormData) {
->   // ...
->  
->   revalidatePath('/dashboard/invoices');
->   redirect('/dashboard/invoices');
-> }
-> ```
->
+>> Next.js has a Client-side Router Cache that stores the route segments in the user's browser for a time. Along with prefetching, this cache ensures that users can quickly navigate between routes while reducing the number of requests made to the server.
+>>
+>> Since you're updating the data displayed in the invoices route, you want to clear this cache and trigger a new request to the server. You can do this with the revalidatePath function from Next.js:
+>>
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> 'use server';
+>>  
+>> import { z } from 'zod';
+>> import { sql } from '@vercel/postgres';
+>> import { revalidatePath } from 'next/cache';
+>>  
+>> // ...
+>>  
+>> export async function createInvoice(formData: FormData) {
+>>   const { customerId, amount, status } = CreateInvoice.parse({
+>>     customerId: formData.get('customerId'),
+>>     amount: formData.get('amount'),
+>>     status: formData.get('status'),
+>>   });
+>>   const amountInCents = amount * 100;
+>>   const date = new Date().toISOString().split('T')[0];
+>>  
+>>   await sql`
+>>     INSERT INTO invoices (customer_id, amount, status, date)
+>>     VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+>>   `;
+>>  
+>>   revalidatePath('/dashboard/invoices');
+>> }
+>> ```
+>>
+>> At this point, you also want to redirect the user to the ```/dashboard/invoices``` page. You can do this with the ```redirect``` function from Next.js:
+>>
+>> ```ts
+>> /*/app/lib/actions.ts*/
+>> 'use server';
+>>  
+>> import { z } from 'zod';
+>> import { sql } from '@vercel/postgres';
+>> import { revalidatePath } from 'next/cache';
+>> import { redirect } from 'next/navigation';
+>>  
+>> // ...
+>>  
+>> export async function createInvoice(formData: FormData) {
+>>   // ...
+>>  
+>>   revalidatePath('/dashboard/invoices');
+>>   redirect('/dashboard/invoices');
+>> }
+>> ```
+>>
+>>
+
 #### Updating an invoice
 > These are the steps you'll take to update an invoice:
 > ##### 1. Create a new dynamic route segment with the invoice id

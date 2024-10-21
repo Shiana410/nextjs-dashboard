@@ -128,7 +128,7 @@ There are a few cases where you have to write database queries:
 >   // ...
 > }
 > ```
-> 
+>
 > Then, uncomment the ```<RevenueChart/>``` component, navigate to the component file (```/app/ui/dashboard/revenue-chart.tsx```), and uncomment the code inside it. Check https://localhost:3000/dashboard. You should be able to see a chart that uses revenue data.
 > 
 #### Fetching data for ```<LatestInvoices/>```

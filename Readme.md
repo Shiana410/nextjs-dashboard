@@ -162,7 +162,7 @@ There are a few cases where you have to write database queries:
 > }
 > ```
 >
->　Then, uncomment the ```<LatestInvoices />``` component. You must also uncomment the relevant code in the ```<LatestInvoices />``` component, located at ```/app/ui/dashboard/latest-invoices```.
+> Then, uncomment the ```<LatestInvoices />``` component. You must also uncomment the relevant code in the ```<LatestInvoices />``` component, located at ```/app/ui/dashboard/latest-invoices```.
 >
 #### Fetch data for the ```<Card>``` components
 >

@@ -3,34 +3,34 @@
 #### Creating a new project
 > pnpm is recommended as the package manager as it is faster and more efficient than npm or yarn. Install it by running the following in the terminal:
 > 
->> ```npm install -g pnpm```
->> 
+> ```npm install -g pnpm```
+> 
 > After installing pnpm, change your directory(cd) into the folder where you would like to place your project and run the following in the terminal:
 > 
->> ```npx create-next-app@latest nextjs-dashboard --example "https://github.com/vercel/next-learn/tree/main/dashboard/starter-example" --use-pnpm```
+> ```npx create-next-app@latest nextjs-dashboard --example "https://github.com/vercel/next-learn/tree/main/dashboard/starter-example" --use-pnpm```
  #### Running the development server
 > Run the following in the terminal to install the project's package:
 > 
->> ```pnpm i```
->> 
+> ```pnpm i```
+> 
 > Then, run this to start the development server:
 > 
->> ```pnpm dev```
->>
+> ```pnpm dev```
+>
 > ```pnpm dev``` starts the development server on port ```3000```. Open http://localhost:3000 to check if it is working.
 > 
 ### 2. CSS Styling
 #### Global styles
 > In the application, ```global.css``` is given and this is the root layout. It can be added by importing the file to ```/app/layout.tsx```:
 > 
->> ```import '@/app/ui/global.css';```
->>
+> ```import '@/app/ui/global.css';```
+>
 > As you can see in the ```global.css```, no CSS rules are given, yet styles are made. It is because of the ```@tailwind``` directives.
 >
->> ```@tailwind base;```
->> ```@tailwind components;```
->> ```@tailwind utilities;```
->>
+> ```@tailwind base;```
+> ```@tailwind components;```
+> ```@tailwind utilities;```
+>
 #### Tailwind
 > Tailwind is a CSS framework that speeds up the development process by allowing you to write utility classes directly in your TSX markup quickly.
 #### CSS modules

@@ -313,11 +313,11 @@ There are a few cases where you have to write database queries:
 > #### Streaming a whole page with ```loading.tsx```
 >> Create a new file ```/app/dashboard/loading.tsx```
 >>
-```tsx
-export default function Loading() {
-  return <div>Loading...</div>;
-}
-```
+>> ```tsx
+>> export default function Loading() {
+>>   return <div>Loading...</div>;
+>> }
+>> ```
 >> A few things are happening here:
 >> + loading.tsx is a special Next.js file built on top of Suspense; it allows you to create a fallback UI to show as a replacement while page content loads.
 >> + Since <SideNav> is static, it's shown immediately. The user can interact with <SideNav> while the dynamic content is loading.
@@ -328,13 +328,13 @@ export default function Loading() {
 >> 
 >> Inside your loading.tsx file, import a new component called ```<DashboardSkeleton>```:
 >>
-```tsx
-import DashboardSkeleton from '@/app/ui/skeletons';
- 
-export default function Loading() {
-  return <DashboardSkeleton />;
-}
-```
+>> ```tsx
+>> import DashboardSkeleton from '@/app/ui/skeletons';
+>>  
+>> export default function Loading() {
+>>   return <DashboardSkeleton />;
+>> }
+>> ```
 >>
 > #### Fixing the loading skeleton bug with route groups
 >> Right now, your loading skeleton will also apply to the invoices and customers pages.
@@ -361,7 +361,7 @@ export default function Loading() {
 >> To do so, you'll need to move the data fetch to the component. Let's update the code to see what that'll look like:
 >> Delete all instances of ```fetchRevenue()``` and its data from ```/dashboard/(overview)/page.tsx```:
 >>
-```
+>> ```
 >> import { Card } from '@/app/ui/dashboard/cards';
 >> import RevenueChart from '@/app/ui/dashboard/revenue-chart';
 >> import LatestInvoices from '@/app/ui/dashboard/latest-invoices';

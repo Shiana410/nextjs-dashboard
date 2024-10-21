@@ -1117,10 +1117,10 @@ There are a few cases where you have to write database queries:
 >>
 
 ### 12. Mutating Data
-> #### What are Server Actions?
->> React Server Actions allow you to run asynchronous code directly on the server. They eliminate the need to create API endpoints to mutate your data. Instead, you write asynchronous functions that execute on the server and can be invoked from your Client or Server Components.
->> 
-> #### Creating an invoice
+ #### What are Server Actions?
+> React Server Actions allow you to run asynchronous code directly on the server. They eliminate the need to create API endpoints to mutate your data. Instead, you write asynchronous functions that execute on the server and can be invoked from your Client or Server Components.
+> 
+ #### Creating an invoice
 >> Here are the steps you'll take to create a new invoice:
 >> 1. Create a form to capture the user's input.
 >> 2. Create a Server Action and invoke it from the form.
@@ -1535,8 +1535,8 @@ There are a few cases where you have to write database queries:
 >>   redirect('/dashboard/invoices');
 >> }
 >> ```
->>
->>
+>
+>
 
 ### 13. Handling Errors
 > #### Adding ```try/catch``` to Server Actions

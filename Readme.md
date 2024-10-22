@@ -615,522 +615,523 @@ There are a few cases where you have to write database queries:
 >
 >
 ### 10. Partial Prerendering
-> #### Static vs. Dynamic Routes
->> For most web apps built today, you choose between static and dynamic rendering for your entire application or a specific route. And in Next.js, if you call a dynamic function in a route (like querying your database), the whole route becomes dynamic.
->> 
->> However, most routes are not fully static or dynamic. For example, consider an e-commerce site. You might want to render the majority of the product information page statically, but you may want to fetch the user's cart and recommended products dynamically, this allows you show personalized content to your users.
->> 
-> #### What is Partial Prerendering
->> A new rendering model that combines the benefits of static and dynamic rendering in the same route.
->> 
->> When a user visits a route:
->> + A static route shell that includes the navbar and product information is served, ensuring a fast initial load.
->> + The shell leaves holes where dynamic content like the cart and recommended products will load asynchronously.
->> + The async holes are streamed in parallel, reducing the page's overall load time.
->>
-> #### How does Partial Prerendering work?
->> Partial Prerendering uses React's Suspense (which you learned about in the previous chapter) to defer rendering parts of your application until some condition is met (e.g. data is loaded).
->> 
->> The Suspense fallback and static content are embedded into the initial HTML file. At build time (or during revalidation), the static content is prerendered to create a static shell. The rendering of dynamic content is postponed until the user requests the route.
->> 
->> Wrapping a component in Suspense doesn't make the component itself dynamic, but rather, Suspense is used as a boundary between your static and dynamic code.
->> 
-> #### Implementing Partial Prerendering
->> Enable PPR for your Next.js app by adding the ppr option to your ```next.config.mjs``` file:
->>
->> ```mjs
->> /*next.config.mjs*/
->> /** @type {import('next').NextConfig} */
->>  
->> const nextConfig = {
->>   experimental: {
->>     ppr: 'incremental',
->>   },
->> };
->>  
->> export default nextConfig;
->> ```
->>
->> The 'incremental' value allows you to adopt PPR for specific routes.
->>
->> Next, add the experimental_ppr segment config option to your dashboard layout:
->>
->> ```tsx
->> /*/app/dashboard/layout.tsx*/
->> import SideNav from '@/app/ui/dashboard/sidenav';
->>  
->> export const experimental_ppr = true;
->>  
->> // ...
->> ```
->>
->>
-
+#### Static vs. Dynamic Routes
+> For most web apps built today, you choose between static and dynamic rendering for your entire application or a specific route. And in Next.js, if you call a dynamic function in a route (like querying your database), the whole route becomes dynamic.
+> 
+> However, most routes are not fully static or dynamic. For example, consider an e-commerce site. You might want to render the majority of the product information page statically, but you may want to fetch the user's cart and recommended products dynamically, this allows you show personalized content to your users.
+> 
+#### What is Partial Prerendering
+> A new rendering model that combines the benefits of static and dynamic rendering in the same route.
+> 
+> When a user visits a route:
+> + A static route shell that includes the navbar and product information is served, ensuring a fast initial load.
+> + The shell leaves holes where dynamic content like the cart and recommended products will load asynchronously.
+> + The async holes are streamed in parallel, reducing the page's overall load time.
+>
+#### How does Partial Prerendering work?
+> Partial Prerendering uses React's Suspense (which you learned about in the previous chapter) to defer rendering parts of your application until some condition is met (e.g. data is loaded).
+> 
+> The Suspense fallback and static content are embedded into the initial HTML file. At build time (or during revalidation), the static content is prerendered to create a static shell. The rendering of dynamic content is postponed until the user requests the route.
+> 
+> Wrapping a component in Suspense doesn't make the component itself dynamic, but rather, Suspense is used as a boundary between your static and dynamic code.
+> 
+#### Implementing Partial Prerendering
+> Enable PPR for your Next.js app by adding the ppr option to your ```next.config.mjs``` file:
+>
+> ```mjs
+> /*next.config.mjs*/
+> /** @type {import('next').NextConfig} */
+>  
+> const nextConfig = {
+>   experimental: {
+>     ppr: 'incremental',
+>   },
+> };
+>  
+> export default nextConfig;
+> ```
+>
+> The 'incremental' value allows you to adopt PPR for specific routes.
+>
+> Next, add the experimental_ppr segment config option to your dashboard layout:
+>
+> ```tsx
+> /*/app/dashboard/layout.tsx*/
+> import SideNav from '@/app/ui/dashboard/sidenav';
+>  
+> export const experimental_ppr = true;
+>  
+> // ...
+> ```
+>
+> Next.js will prerender the static parts of your route and defer the dynamic parts until the user requests them.
+>
+> As long as you're using Suspense to wrap the dynamic parts of your route, Next.js will know which parts of your route are static or dynamic, so you don't need to change your code to use it.
+>
+> 
 ### 11. Adding Search and Pagination
-> #### Starting code
->>
->> ```tsx
->> /*/app/dashboard/invoices/page.tsx*/
->> import Pagination from '@/app/ui/invoices/pagination';
->> import Search from '@/app/ui/search';
->> import Table from '@/app/ui/invoices/table';
->> import { CreateInvoice } from '@/app/ui/invoices/buttons';
->> import { lusitana } from '@/app/ui/fonts';
->> import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
->> import { Suspense } from 'react';
->>  
->> export default async function Page() {
->>   return (
->>     <div className="w-full">
->>       <div className="flex w-full items-center justify-between">
->>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
->>       </div>
->>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
->>         <Search placeholder="Search invoices..." />
->>         <CreateInvoice />
->>       </div>
->>       {/*  <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
->>         <Table query={query} currentPage={currentPage} />
->>       </Suspense> */}
->>       <div className="mt-5 flex w-full justify-center">
->>         {/* <Pagination totalPages={totalPages} /> */}
->>       </div>
->>     </div>
->>   );
->> }
->> ```
->>
->> Code Explanation:
->> 1. ```<Search/>``` allows users to search for specific invoices.
->> 2. ```<Pagination/>``` allows users to navigate between pages of invoices.
->> 3. ```<Table/>``` displays the invoices.
->>
-> #### Why use URL search params?
->> There are a couple of benefits of implementing search with URL params:
->> + Bookmarkable and Shareable URLs: Since the search parameters are in the URL, users can bookmark the current state of the application, including their search queries and filters, for future reference or sharing.
->> + Server-Side Rendering and Initial Load: URL parameters can be directly consumed on the server to render the initial state, making it easier to handle server rendering.
->> + Analytics and Tracking: Having search queries and filters directly in the URL makes it easier to track user behaviour without requiring additional client-side logic.
->>
-> #### Adding the search functionality
->> These are the Next.js client hooks that you'll use to implement the search functionality:
->> + ```useSearchParams```- Allows you to access the parameters of the current URL. For example, the search params for this URL ```/dashboard/invoices?page=1&query=pending``` would look like this: {```page: '1', query: 'pending'}```.
->> + ```usePathname``` - Lets you read the current URL's pathname. For example, for the route ```/dashboard/invoices```, ```usePathname``` would return ```'/dashboard/invoices'```.
->> + ```useRouter``` - Enables programmatically navigation between routes within client components. There are multiple methods you can use.
->>
->> ##### Implementation steps:
->>> ##### 1. Capture the user's input
->>>> Create a new handleSearch function, and add an onChange listener to the <input> element. onChange will invoke handleSearch whenever the input value changes.
->>>>
->>>> ```tsx
->>>> /*/app/ui/search.tsx*/
->>>> 'use client';
->>>>  
->>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
->>>>  
->>>> export default function Search({ placeholder }: { placeholder: string }) {
->>>>   function handleSearch(term: string) {
->>>>     console.log(term);
->>>>   }
->>>>  
->>>>   return (
->>>>     <div className="relative flex flex-1 flex-shrink-0">
->>>>       <label htmlFor="search" className="sr-only">
->>>>         Search
->>>>       </label>
->>>>       <input
->>>>         className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
->>>>         placeholder={placeholder}
->>>>         onChange={(e) => {
->>>>           handleSearch(e.target.value);
->>>>         }}
->>>>       />
->>>>       <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
->>>>     </div>
->>>>   );
->>>> }
->>>> ```
->>>> 
->>> ##### 2. Update the URL with the search params.
->>>> Import the ```useSearchParams``` hook from ```'next/navigation'```, and assign it to a variable:
->>>>
->>>> ```tsx
->>>> /*/app/ui/search.tsx*/
->>>> 'use client';
->>>>  
->>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
->>>> import { useSearchParams } from 'next/navigation';
->>>>  
->>>> export default function Search() {
->>>>   const searchParams = useSearchParams();
->>>>  
->>>>   function handleSearch(term: string) {
->>>>     console.log(term);
->>>>   }
->>>>   // ...
->>>> }
->>>> ```
->>>>
->>>> Inside ```handleSearch```, create a new ```URLSearchParams``` instance using your new ```searchParams``` variable.
->>>>
->>>> ```tsx
->>>> /*/app/ui/search.tsx*/
->>>> 'use client';
->>>>  
->>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
->>>> import { useSearchParams } from 'next/navigation';
->>>>  
->>>> export default function Search() {
->>>>   const searchParams = useSearchParams();
->>>>  
->>>>   function handleSearch(term: string) {
->>>>     const params = new URLSearchParams(searchParams);
->>>>   }
->>>>   // ...
->>>> }
->>>> ```
->>>>
->>>> ```URLSearchParams``` is a Web API that provides utility methods for manipulating the URL query parameters. Instead of creating a complex string literal, you can use it to get the params string like ```?page=1&query=a```.
->>>>
->>>> Next, ```set``` the params string based on the user’s input. If the input is empty, you want to ```delete``` it:
->>>>
->>>> ```tsx
->>>> /*/app/ui/search.tsx*/
->>>> 'use client';
->>>>  
->>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
->>>> import { useSearchParams } from 'next/navigation';
->>>>  
->>>> export default function Search() {
->>>>   const searchParams = useSearchParams();
->>>>  
->>>>   function handleSearch(term: string) {
->>>>     const params = new URLSearchParams(searchParams);
->>>>     if (term) {
->>>>       params.set('query', term);
->>>>     } else {
->>>>       params.delete('query');
->>>>     }
->>>>   }
->>>>   // ...
->>>> }
->>>> ```
->>>>
->>>> You can use Next.js's ```useRouter``` and ```usePathname``` hooks to update the URL.
->>>>
->>>> Import ```useRouter``` and ```usePathname``` from ```'next/navigation'```, and use the ```replace``` method from ```useRouter()``` inside ```handleSearch```:
->>>>
->>>> ```tsx
->>>> /*/app/ui/search.tsx*/
->>>> 'use client';
->>>>  
->>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
->>>> import { useSearchParams, usePathname, useRouter } from 'next/navigation';
->>>>  
->>>> export default function Search() {
->>>>   const searchParams = useSearchParams();
->>>>   const pathname = usePathname();
->>>>   const { replace } = useRouter();
->>>>  
->>>>   function handleSearch(term: string) {
->>>>     const params = new URLSearchParams(searchParams);
->>>>     if (term) {
->>>>       params.set('query', term);
->>>>     } else {
->>>>       params.delete('query');
->>>>     }
->>>>     replace(`${pathname}?${params.toString()}`);
->>>>   }
->>>> }
->>>> ```
->>>>
->>>> Here's a breakdown of what's happening:
->>>> + ```${pathname}``` is the current path, in your case, ```"/dashboard/invoices"```.
->>>> + As the user types into the search bar, ```params.toString()``` translates this input into a URL-friendly format.
->>>> + ```replace(${pathname}?${params.toString()})``` updates the URL with the user's search data. For example, ```/dashboard/invoices?query=lee``` if the user searches for "Lee."
->>>> + The URL is updated without reloading the page, thanks to Next.js's client-side navigation (which you learned about in the chapter on navigating between pages.
->>>>
->>> ##### 3. Keeping the URL and input in sync
->>>> To ensure the input field is in sync with the URL and will be populated when sharing, you can pass a ```defaultValue``` to input by reading from ```searchParams```:
->>>>
->>>> ```tsx
->>>> /*/app/ui/search.tsx*/
->>>> <input
->>>>   className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
->>>>   placeholder={placeholder}
->>>>   onChange={(e) => {
->>>>     handleSearch(e.target.value);
->>>>   }}
->>>>   defaultValue={searchParams.get('query')?.toString()}
->>>> />
->>>> ```
->>>>
->>> ##### 4. Updating the table
->>>> Page components accept a prop called ```searchParams```, so you can pass the current URL params to the ```<Table>``` component.
->>>>
->>>> ```tsx
->>>> /*/app/dashboard/invoices/page.tsx*/
->>>> import Pagination from '@/app/ui/invoices/pagination';
->>>> import Search from '@/app/ui/search';
->>>> import Table from '@/app/ui/invoices/table';
->>>> import { CreateInvoice } from '@/app/ui/invoices/buttons';
->>>> import { lusitana } from '@/app/ui/fonts';
->>>> import { Suspense } from 'react';
->>>> import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
->>>>  
->>>> export default async function Page({
->>>>   searchParams,
->>>> }: {
->>>>   searchParams?: {
->>>>     query?: string;
->>>>     page?: string;
->>>>   };
->>>> }) {
->>>>   const query = searchParams?.query || '';
->>>>   const currentPage = Number(searchParams?.page) || 1;
->>>>  
->>>>   return (
->>>>     <div className="w-full">
->>>>       <div className="flex w-full items-center justify-between">
->>>>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
->>>>       </div>
->>>>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
->>>>         <Search placeholder="Search invoices..." />
->>>>         <CreateInvoice />
->>>>       </div>
->>>>       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
->>>>         <Table query={query} currentPage={currentPage} />
->>>>       </Suspense>
->>>>       <div className="mt-5 flex w-full justify-center">
->>>>         {/* <Pagination totalPages={totalPages} /> */}
->>>>       </div>
->>>>     </div>
->>>>   );
->>>> }
->>>> ```
->>>>
->>>> If you navigate to the ```<Table```> Component, you'll see that the two props, ```query``` and ```currentPage```, are passed to the ```fetchFilteredInvoices()``` function which returns the invoices that match the query.
->>>>
->>>> ```tsx
->>>> /*/app/ui/invoices/table.tsx*/
->>>> // ...
->>>> export default async function InvoicesTable({
->>>>   query,
->>>>   currentPage,
->>>> }: {
->>>>   query: string;
->>>>   currentPage: number;
->>>> }) {
->>>>   const invoices = await fetchFilteredInvoices(query, currentPage);
->>>>   // ...
->>>> }
->>>> ```
->>>>
-> #### Debouncing
->> Inside your ```handleSearch``` function, add the following ```console.log```:
->>
->> ```tsx
->> /*/app/ui/search.tsx*/
->> function handleSearch(term: string) {
->>   console.log(`Searching... ${term}`);
->>  
->>   const params = new URLSearchParams(searchParams);
->>   if (term) {
->>     params.set('query', term);
->>   } else {
->>     params.delete('query');
->>   }
->>   replace(`${pathname}?${params.toString()}`);
->> }
->> ```
->> The URL is updated on every keystroke. This isn't a problem as our application is small, but imagine if your application had thousands of users, each sending a new request to your database on each keystroke.
->> 
->> Debouncing is a programming practice that limits the rate at which a function can fire. In our case, you only want to query the database when the user has stopped typing.
->> 
->> You can implement debouncing in a few ways, including manually creating your debounce function.
->> 
->> Install ```use-debounce```:
->> ```pnpm i use-debounce```
->> 
->> In your ```<Search>``` Component, import a function called ```useDebouncedCallback```:
->>
->> ```tsx
->> /*/app/ui/search.tsx*/
->> // ...
->> import { useDebouncedCallback } from 'use-debounce';
->>  
->> // Inside the Search Component...
->> const handleSearch = useDebouncedCallback((term) => {
->>   console.log(`Searching... ${term}`);
->>  
->>   const params = new URLSearchParams(searchParams);
->>   if (term) {
->>     params.set('query', term);
->>   } else {
->>     params.delete('query');
->>   }
->>   replace(`${pathname}?${params.toString()}`);
->> }, 300);
->> ```
->>
->> This function will wrap the contents of ```handleSearch``` and only run the code after a specific time once the user has stopped typing (300ms).
->> 
-> #### Adding pagination
->> After introducing the search feature, the table displays only six invoices simultaneously. This is because the ```fetchFilteredInvoices()``` function in ```data.ts``` returns a maximum of 6 invoices per page.
->> 
->> Adding pagination allows users to navigate the different pages to view all the invoices. Let's see how you can implement pagination using URL params, just like you did with search.
->> 
->> Navigate to the ```<Pagination/>``` component and you'll notice it's a Client Component. You don't want to fetch data on the client as this would expose your database secrets (remember, you're not using an API layer). Instead, you can fetch the data on the server, and pass it to the component as a prop.
->> 
->> In ```/dashboard/invoices/page.tsx```, import a new function called ```fetchInvoicesPages``` and pass the ```query``` from ```searchParams``` as an argument:
->>
->> ```tsx
->> /*/app/dashboard/invoices/page.tsx*/
->> // ...
->> import { fetchInvoicesPages } from '@/app/lib/data';
->>  
->> export default async function Page({
->>   searchParams,
->> }: {
->>   searchParams?: {
->>     query?: string,
->>     page?: string,
->>   },
->> }) {
->>   const query = searchParams?.query || '';
->>   const currentPage = Number(searchParams?.page) || 1;
->>  
->>   const totalPages = await fetchInvoicesPages(query);
->>  
->>   return (
->>     // ...
->>   );
->> }
->> ```
->>
->> ```fetchInvoicesPages``` returns the total number of pages based on the search query. For example, if 12 invoices match the search query, and each page displays six invoices, the total number of pages would be 2.
->>
->> Next, pass the ```totalPages``` prop to the ```<Pagination/>``` component:
->>
->> ```tsx
->> /*/app/dashboard/invoices/page.tsx*/
->> // ...
->>  
->> export default async function Page({
->>   searchParams,
->> }: {
->>   searchParams?: {
->>     query?: string;
->>     page?: string;
->>   };
->> }) {
->>   const query = searchParams?.query || '';
->>   const currentPage = Number(searchParams?.page) || 1;
->>  
->>   const totalPages = await fetchInvoicesPages(query);
->>  
->>   return (
->>     <div className="w-full">
->>       <div className="flex w-full items-center justify-between">
->>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
->>       </div>
->>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
->>         <Search placeholder="Search invoices..." />
->>         <CreateInvoice />
->>       </div>
->>       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
->>         <Table query={query} currentPage={currentPage} />
->>       </Suspense>
->>       <div className="mt-5 flex w-full justify-center">
->>         <Pagination totalPages={totalPages} />
->>       </div>
->>     </div>
->>   );
->> }
->> ```
->>
->> Navigate to the ```<Pagination/>``` component and import the ```usePathname``` and ```useSearchParams``` hooks. We will use this to get the current page and set the new page. Make sure to also uncomment the code in this component. Your application will break temporarily as you haven't implemented the ```<Pagination/>``` logic yet. Let's do that now!
->>
->> ```tsx
->> /*/app/ui/invoices/pagination.tsx*/
->> 'use client';
->>  
->> import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
->> import clsx from 'clsx';
->> import Link from 'next/link';
->> import { generatePagination } from '@/app/lib/utils';
->> import { usePathname, useSearchParams } from 'next/navigation';
->>  
->> export default function Pagination({ totalPages }: { totalPages: number }) {
->>   const pathname = usePathname();
->>   const searchParams = useSearchParams();
->>   const currentPage = Number(searchParams.get('page')) || 1;
->>  
->>   // ...
->> }
->> ```
->>
->> Next, create a new function inside the ```<Pagination>``` Component called ```createPageURL```. Similarly to the search, you'll use ```URLSearchParams``` to set the new page number, and pathName to create the URL string.
->>
->> ```tsx
->> /*/app/ui/invoices/pagination.tsx*/
->> 'use client';
->>  
->> import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
->> import clsx from 'clsx';
->> import Link from 'next/link';
->> import { generatePagination } from '@/app/lib/utils';
->> import { usePathname, useSearchParams } from 'next/navigation';
->>  
->> export default function Pagination({ totalPages }: { totalPages: number }) {
->>   const pathname = usePathname();
->>   const searchParams = useSearchParams();
->>   const currentPage = Number(searchParams.get('page')) || 1;
->>  
->>   const createPageURL = (pageNumber: number | string) => {
->>     const params = new URLSearchParams(searchParams);
->>     params.set('page', pageNumber.toString());
->>     return `${pathname}?${params.toString()}`;
->>   };
->>  
->>   // ...
->> }
->> ```
->>
->> Here's a breakdown of what's happening:
->>
->> + ```createPageURL``` creates an instance of the current search parameters.
->> + Then, it updates the "page" parameter to the provided page number.
->> + Finally, it constructs the full URL using the pathname and updated search parameters.
->>
->> Finally, when the user types a new search query, you want to reset the page number to 1. You can do this by updating the ```handleSearch``` function in your ```<Search>``` component:
->>
->> ```tsx
->> /*/app/ui/search.tsx*/
->> 'use client';
->>  
->> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
->> import { usePathname, useRouter, useSearchParams } from 'next/navigation';
->> import { useDebouncedCallback } from 'use-debounce';
->>  
->> export default function Search({ placeholder }: { placeholder: string }) {
->>   const searchParams = useSearchParams();
->>   const { replace } = useRouter();
->>   const pathname = usePathname();
->>  
->>   const handleSearch = useDebouncedCallback((term) => {
->>     const params = new URLSearchParams(searchParams);
->>     params.set('page', '1');
->>     if (term) {
->>       params.set('query', term);
->>     } else {
->>       params.delete('query');
->>     }
->>     replace(`${pathname}?${params.toString()}`);
->>   }, 300);
->>  
->> ```
->>
-
+#### Starting code
+>
+> ```tsx
+> /*/app/dashboard/invoices/page.tsx*/
+> import Pagination from '@/app/ui/invoices/pagination';
+> import Search from '@/app/ui/search';
+> import Table from '@/app/ui/invoices/table';
+> import { CreateInvoice } from '@/app/ui/invoices/buttons';
+> import { lusitana } from '@/app/ui/fonts';
+> import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+> import { Suspense } from 'react';
+>  
+> export default async function Page() {
+>   return (
+>     <div className="w-full">
+>       <div className="flex w-full items-center justify-between">
+>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+>       </div>
+>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+>         <Search placeholder="Search invoices..." />
+>         <CreateInvoice />
+>       </div>
+>       {/*  <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+>         <Table query={query} currentPage={currentPage} />
+>       </Suspense> */}
+>       <div className="mt-5 flex w-full justify-center">
+>         {/* <Pagination totalPages={totalPages} /> */}
+>       </div>
+>     </div>
+>   );
+> }
+> ```
+>
+> Code Explanation:
+> 1. ```<Search/>``` allows users to search for specific invoices.
+> 2. ```<Pagination/>``` allows users to navigate between pages of invoices.
+> 3. ```<Table/>``` displays the invoices.
+>
+#### Why use URL search params?
+> There are a couple of benefits of implementing search with URL params:
+> + Bookmarkable and Shareable URLs: Since the search parameters are in the URL, users can bookmark the current state of the application, including their search queries and filters, for future reference or sharing.
+> + Server-Side Rendering and Initial Load: URL parameters can be directly consumed on the server to render the initial state, making it easier to handle server rendering.
+> + Analytics and Tracking: Having search queries and filters directly in the URL makes it easier to track user behaviour without requiring additional client-side logic.
+>
+#### Adding the search functionality
+> These are the Next.js client hooks that you'll use to implement the search functionality:
+> + ```useSearchParams```- Allows you to access the parameters of the current URL. For example, the search params for this URL ```/dashboard/invoices?page=1&query=pending``` would look like this: {```page: '1', query: 'pending'}```.
+> + ```usePathname``` - Lets you read the current URL's pathname. For example, for the route ```/dashboard/invoices```, ```usePathname``` would return ```'/dashboard/invoices'```.
+> + ```useRouter``` - Enables programmatically navigation between routes within client components. There are multiple methods you can use.
+>
+> ##### Implementation steps:
+>> ##### 1. Capture the user's input
+>>> Create a new handleSearch function, and add an onChange listener to the <input> element. onChange will invoke handleSearch whenever the input value changes.
+>>>
+>>> ```tsx
+>>> /*/app/ui/search.tsx*/
+>>> 'use client';
+>>>  
+>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>>  
+>>> export default function Search({ placeholder }: { placeholder: string }) {
+>>>   function handleSearch(term: string) {
+>>>     console.log(term);
+>>>   }
+>>>  
+>>>   return (
+>>>     <div className="relative flex flex-1 flex-shrink-0">
+>>>       <label htmlFor="search" className="sr-only">
+>>>         Search
+>>>       </label>
+>>>       <input
+>>>         className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+>>>         placeholder={placeholder}
+>>>         onChange={(e) => {
+>>>           handleSearch(e.target.value);
+>>>         }}
+>>>       />
+>>>       <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+>>>     </div>
+>>>   );
+>>> }
+>>> ```
+>>> 
+>> ##### 2. Update the URL with the search params.
+>>> Import the ```useSearchParams``` hook from ```'next/navigation'```, and assign it to a variable:
+>>>
+>>> ```tsx
+>>> /*/app/ui/search.tsx*/
+>>> 'use client';
+>>>  
+>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>> import { useSearchParams } from 'next/navigation';
+>>>  
+>>> export default function Search() {
+>>>   const searchParams = useSearchParams();
+>>>  
+>>>   function handleSearch(term: string) {
+>>>     console.log(term);
+>>>   }
+>>>   // ...
+>>> }
+>>> ```
+>>>
+>>> Inside ```handleSearch```, create a new ```URLSearchParams``` instance using your new ```searchParams``` variable.
+>>>
+>>> ```tsx
+>>> /*/app/ui/search.tsx*/
+>>> 'use client';
+>>>  
+>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>> import { useSearchParams } from 'next/navigation';
+>>>  
+>>> export default function Search() {
+>>>   const searchParams = useSearchParams();
+>>>  
+>>>   function handleSearch(term: string) {
+>>>     const params = new URLSearchParams(searchParams);
+>>>   }
+>>>   // ...
+>>> }
+>>> ```
+>>>
+>>> ```URLSearchParams``` is a Web API that provides utility methods for manipulating the URL query parameters. Instead of creating a complex string literal, you can use it to get the params string like ```?page=1&query=a```.
+>>>
+>>> Next, ```set``` the params string based on the user’s input. If the input is empty, you want to ```delete``` it:
+>>>
+>>> ```tsx
+>>> /*/app/ui/search.tsx*/
+>>> 'use client';
+>>>  
+>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>> import { useSearchParams } from 'next/navigation';
+>>>  
+>>> export default function Search() {
+>>>   const searchParams = useSearchParams();
+>>>  
+>>>   function handleSearch(term: string) {
+>>>     const params = new URLSearchParams(searchParams);
+>>>     if (term) {
+>>>       params.set('query', term);
+>>>     } else {
+>>>       params.delete('query');
+>>>     }
+>>>   }
+>>>   // ...
+>>> }
+>>> ```
+>>>
+>>> You can use Next.js's ```useRouter``` and ```usePathname``` hooks to update the URL.
+>>>
+>>> Import ```useRouter``` and ```usePathname``` from ```'next/navigation'```, and use the ```replace``` method from ```useRouter()``` inside ```handleSearch```:
+>>>
+>>> ```tsx
+>>> /*/app/ui/search.tsx*/
+>>> 'use client';
+>>>  
+>>> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+>>> import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+>>>  
+>>> export default function Search() {
+>>>   const searchParams = useSearchParams();
+>>>   const pathname = usePathname();
+>>>   const { replace } = useRouter();
+>>>  
+>>>   function handleSearch(term: string) {
+>>>     const params = new URLSearchParams(searchParams);
+>>>     if (term) {
+>>>       params.set('query', term);
+>>>     } else {
+>>>       params.delete('query');
+>>>     }
+>>>     replace(`${pathname}?${params.toString()}`);
+>>>   }
+>>> }
+>>> ```
+>>>
+>>> Here's a breakdown of what's happening:
+>>> + ```${pathname}``` is the current path, in your case, ```"/dashboard/invoices"```.
+>>> + As the user types into the search bar, ```params.toString()``` translates this input into a URL-friendly format.
+>>> + ```replace(${pathname}?${params.toString()})``` updates the URL with the user's search data. For example, ```/dashboard/invoices?query=lee``` if the user searches for "Lee."
+>>> + The URL is updated without reloading the page, thanks to Next.js's client-side navigation (which you learned about in the chapter on navigating between pages.
+>>>
+>> ##### 3. Keeping the URL and input in sync
+>>> To ensure the input field is in sync with the URL and will be populated when sharing, you can pass a ```defaultValue``` to input by reading from ```searchParams```:
+>>>
+>>> ```tsx
+>>> /*/app/ui/search.tsx*/
+>>> <input
+>>>   className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+>>>   placeholder={placeholder}
+>>>   onChange={(e) => {
+>>>     handleSearch(e.target.value);
+>>>   }}
+>>>   defaultValue={searchParams.get('query')?.toString()}
+>>> />
+>>> ```
+>>>
+>> ##### 4. Updating the table
+>>> Page components accept a prop called ```searchParams```, so you can pass the current URL params to the ```<Table>``` component.
+>>>
+>>> ```tsx
+>>> /*/app/dashboard/invoices/page.tsx*/
+>>> import Pagination from '@/app/ui/invoices/pagination';
+>>> import Search from '@/app/ui/search';
+>>> import Table from '@/app/ui/invoices/table';
+>>> import { CreateInvoice } from '@/app/ui/invoices/buttons';
+>>> import { lusitana } from '@/app/ui/fonts';
+>>> import { Suspense } from 'react';
+>>> import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
+>>>  
+>>> export default async function Page({
+>>>   searchParams,
+>>> }: {
+>>>   searchParams?: {
+>>>     query?: string;
+>>>     page?: string;
+>>>   };
+>>> }) {
+>>>   const query = searchParams?.query || '';
+>>>   const currentPage = Number(searchParams?.page) || 1;
+>>>  
+>>>   return (
+>>>     <div className="w-full">
+>>>       <div className="flex w-full items-center justify-between">
+>>>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+>>>       </div>
+>>>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+>>>         <Search placeholder="Search invoices..." />
+>>>         <CreateInvoice />
+>>>       </div>
+>>>       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+>>>         <Table query={query} currentPage={currentPage} />
+>>>       </Suspense>
+>>>       <div className="mt-5 flex w-full justify-center">
+>>>         {/* <Pagination totalPages={totalPages} /> */}
+>>>       </div>
+>>>     </div>
+>>>   );
+>>> }
+>>> ```
+>>>
+>>> If you navigate to the ```<Table```> Component, you'll see that the two props, ```query``` and ```currentPage```, are passed to the ```fetchFilteredInvoices()``` function which returns the invoices that match the query.
+>>>
+>>> ```tsx
+>>> /*/app/ui/invoices/table.tsx*/
+>>> // ...
+>>> export default async function InvoicesTable({
+>>>   query,
+>>>   currentPage,
+>>> }: {
+>>>   query: string;
+>>>   currentPage: number;
+>>> }) {
+>>>   const invoices = await fetchFilteredInvoices(query, currentPage);
+>>>   // ...
+>>> }
+>>> ```
+>>>
+#### Debouncing
+> Inside your ```handleSearch``` function, add the following ```console.log```:
+>
+> ```tsx
+> /*/app/ui/search.tsx*/
+> function handleSearch(term: string) {
+>   console.log(`Searching... ${term}`);
+>  
+>   const params = new URLSearchParams(searchParams);
+>   if (term) {
+>     params.set('query', term);
+>   } else {
+>     params.delete('query');
+>   }
+>   replace(`${pathname}?${params.toString()}`);
+> }
+> ```
+> The URL is updated on every keystroke. This isn't a problem as our application is small, but imagine if your application had thousands of users, each sending a new request to your database on each keystroke.
+> 
+> Debouncing is a programming practice that limits the rate at which a function can fire. In our case, you only want to query the database when the user has stopped typing.
+> 
+> You can implement debouncing in a few ways, including manually creating your debounce function.
+> 
+> Install ```use-debounce```:
+> ```pnpm i use-debounce```
+> 
+> In your ```<Search>``` Component, import a function called ```useDebouncedCallback```:
+>
+> ```tsx
+> /*/app/ui/search.tsx*/
+> // ...
+> import { useDebouncedCallback } from 'use-debounce';
+>  
+> // Inside the Search Component...
+> const handleSearch = useDebouncedCallback((term) => {
+>   console.log(`Searching... ${term}`);
+>  
+>   const params = new URLSearchParams(searchParams);
+>   if (term) {
+>     params.set('query', term);
+>   } else {
+>     params.delete('query');
+>   }
+>   replace(`${pathname}?${params.toString()}`);
+> }, 300);
+> ```
+>
+> This function will wrap the contents of ```handleSearch``` and only run the code after a specific time once the user has stopped typing (300ms).
+> 
+#### Adding pagination
+> After introducing the search feature, the table displays only six invoices simultaneously. This is because the ```fetchFilteredInvoices()``` function in ```data.ts``` returns a maximum of 6 invoices per page.
+> 
+> Adding pagination allows users to navigate the different pages to view all the invoices. Let's see how you can implement pagination using URL params, just like you did with search.
+> 
+> Navigate to the ```<Pagination/>``` component, and you'll notice it's a Client Component. You don't want to fetch data on the client as this would expose your database secrets (remember, you're not using an API layer). Instead, you can fetch the data on the server and pass it to the component as a prop.
+> 
+> In ```/dashboard/invoices/page.tsx```, import a new function called ```fetchInvoicesPages``` and pass the ```query``` from ```searchParams``` as an argument:
+>
+> ```tsx
+> /*/app/dashboard/invoices/page.tsx*/
+> // ...
+> import { fetchInvoicesPages } from '@/app/lib/data';
+>  
+> export default async function Page({
+>   searchParams,
+> }: {
+>   searchParams?: {
+>     query?: string,
+>     page?: string,
+>   },
+> }) {
+>   const query = searchParams?.query || '';
+>   const currentPage = Number(searchParams?.page) || 1;
+>  
+>   const totalPages = await fetchInvoicesPages(query);
+>  
+>   return (
+>     // ...
+>   );
+> }
+> ```
+>
+> ```fetchInvoicesPages``` returns the total number of pages based on the search query. For example, if 12 invoices match the search query, and each page displays six invoices, the total number of pages would be 2.
+>
+> Next, pass the ```totalPages``` prop to the ```<Pagination/>``` component:
+>
+> ```tsx
+> /*/app/dashboard/invoices/page.tsx*/
+> // ...
+>  
+> export default async function Page({
+>   searchParams,
+> }: {
+>   searchParams?: {
+>     query?: string;
+>     page?: string;
+>   };
+> }) {
+>   const query = searchParams?.query || '';
+>   const currentPage = Number(searchParams?.page) || 1;
+>  
+>   const totalPages = await fetchInvoicesPages(query);
+>  
+>   return (
+>     <div className="w-full">
+>       <div className="flex w-full items-center justify-between">
+>         <h1 className={`${lusitana.className} text-2xl`}>Invoices</h1>
+>       </div>
+>       <div className="mt-4 flex items-center justify-between gap-2 md:mt-8">
+>         <Search placeholder="Search invoices..." />
+>         <CreateInvoice />
+>       </div>
+>       <Suspense key={query + currentPage} fallback={<InvoicesTableSkeleton />}>
+>         <Table query={query} currentPage={currentPage} />
+>       </Suspense>
+>       <div className="mt-5 flex w-full justify-center">
+>         <Pagination totalPages={totalPages} />
+>       </div>
+>     </div>
+>   );
+> }
+> ```
+>
+> Navigate to the ```<Pagination/>``` component and import the ```usePathname``` and ```useSearchParams``` hooks. We will use this to get the current page and set the new page. Make sure to also uncomment the code in this component. Your application will break temporarily as you haven't implemented the ```<Pagination/>``` logic yet. Let's do that now!
+>
+> ```tsx
+> /*/app/ui/invoices/pagination.tsx*/
+> 'use client';
+>  
+> import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+> import clsx from 'clsx';
+> import Link from 'next/link';
+> import { generatePagination } from '@/app/lib/utils';
+> import { usePathname, useSearchParams } from 'next/navigation';
+>  
+> export default function Pagination({ totalPages }: { totalPages: number }) {
+>   const pathname = usePathname();
+>   const searchParams = useSearchParams();
+>   const currentPage = Number(searchParams.get('page')) || 1;
+>  
+>   // ...
+> }
+> ```
+>
+> Next, create a new function inside the ```<Pagination>``` Component called ```createPageURL```. Similarly to the search, you'll use ```URLSearchParams``` to set the new page number and pathName to create the URL string.
+>
+> ```tsx
+> /*/app/ui/invoices/pagination.tsx*/
+> 'use client';
+>  
+> import { ArrowLeftIcon, ArrowRightIcon } from '@heroicons/react/24/outline';
+> import clsx from 'clsx';
+> import Link from 'next/link';
+> import { generatePagination } from '@/app/lib/utils';
+> import { usePathname, useSearchParams } from 'next/navigation';
+>  
+> export default function Pagination({ totalPages }: { totalPages: number }) {
+>   const pathname = usePathname();
+>   const searchParams = useSearchParams();
+>   const currentPage = Number(searchParams.get('page')) || 1;
+>  
+>   const createPageURL = (pageNumber: number | string) => {
+>     const params = new URLSearchParams(searchParams);
+>     params.set('page', pageNumber.toString());
+>     return `${pathname}?${params.toString()}`;
+>   };
+>  
+>   // ...
+> }
+> ```
+>
+> Here's a breakdown of what's happening:
+> + ```createPageURL``` creates an instance of the current search parameters.
+> + Then, it updates the "page" parameter to the provided page number.
+> + Finally, it constructs the full URL using the pathname and updated search parameters.
+>
+> Finally, when the user types a new search query, you want to reset the page number to 1. You can do this by updating the ```handleSearch``` function in your ```<Search>``` component:
+>
+> ```tsx
+> /*/app/ui/search.tsx*/
+> 'use client';
+>  
+> import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+> import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+> import { useDebouncedCallback } from 'use-debounce';
+>  
+> export default function Search({ placeholder }: { placeholder: string }) {
+>   const searchParams = useSearchParams();
+>   const { replace } = useRouter();
+>   const pathname = usePathname();
+>  
+>   const handleSearch = useDebouncedCallback((term) => {
+>     const params = new URLSearchParams(searchParams);
+>     params.set('page', '1');
+>     if (term) {
+>       params.set('query', term);
+>     } else {
+>       params.delete('query');
+>     }
+>     replace(`${pathname}?${params.toString()}`);
+>   }, 300);
+>  
+> ```
+>
 ### 12. Mutating Data
 #### What are Server Actions?
 > React Server Actions allow you to run asynchronous code directly on the server. They eliminate the need to create API endpoints to mutate your data. Instead, you write asynchronous functions that execute on the server and can be invoked from your Client or Server Components.
